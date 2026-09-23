@@ -17,7 +17,7 @@ function rect(c,x,y,w,h,r=0){c.beginPath();c.roundRect(x,y,w,h,r);c.fill();}
 function line(c,x1,y1,x2,y2,width=2){c.lineWidth=width;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
 function text(c,t,x,y,size,color,weight=400,align='left',max=Infinity,italic=false){c.fillStyle=color;c.font=`${italic?'italic ':''}${weight} ${size}px Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif`;c.textAlign=align;c.textBaseline='alphabetic';let out=t;if(c.measureText(out).width>max){while(out.length && c.measureText(out+'…').width>max)out=out.slice(0,-1);out+='…';}c.fillText(out,x,y);}
 function crop(w,h,extraZoom=1){const im=state.image,z=number('zoom')*extraZoom,scale=Math.max(w/im.width,h/im.height)*z;const sw=w/scale,sh=h/scale;return {sx:(im.width-sw)*(number('panX')+1)/2,sy:(im.height-sh)*(number('panY')+1)/2,sw,sh};}
-function photo(c,x,y,w,h,{blur=0,shake=0,radius=0}={}){const p=crop(w,h,blur?1.08:1);c.save();c.beginPath();c.roundRect(x,y,w,h,radius);c.clip();if(blur && typeof c.filter!=='string'){
+function photo(c,x,y,w,h,{blur=0,shake=0,radius=0}={}){const p=crop(w,h,1);c.save();c.beginPath();c.roundRect(x,y,w,h,radius);c.clip();if(blur && typeof c.filter!=='string'){
  const low=Math.max(10,Math.round(Math.min(w,h)/Math.max(2,blur*1.8)));
  blurBuffer.width=Math.max(2,Math.round(w/Math.min(w,h)*low));blurBuffer.height=Math.max(2,Math.round(h/Math.min(w,h)*low));
  const bc=blurBuffer.getContext('2d');bc.drawImage(state.image,p.sx,p.sy,p.sw,p.sh,0,0,blurBuffer.width,blurBuffer.height);
