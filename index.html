@@ -25,6 +25,7 @@
   <div class="tabs" role="tablist" aria-label="작업 종류">
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
+    <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
   </div>
 
   <section>
@@ -122,6 +123,44 @@
         </select>
       </label>
       <p class="hint">3.6초 · 15 fps · PNG는 긴 변 1920 px</p>
+    </section>
+  </div>
+
+  <div id="ticketPanel" role="tabpanel" aria-labelledby="ticketTab" hidden>
+    <section>
+      <h2><i>2</i>공연 정보</h2>
+      <label>공연명<input id="ticketTitle" type="text" maxlength="60" placeholder="RESCENE LIVE"></label>
+      <label>투어/부제<input id="ticketArtist" type="text" maxlength="60" placeholder="World Tour"></label>
+      <div class="pair">
+        <label>날짜<input id="ticketDate" type="text" maxlength="20" placeholder="2026.11.14"></label>
+        <label>장소<input id="ticketVenue" type="text" maxlength="30" placeholder="Seoul, KR"></label>
+      </div>
+    </section>
+    <section>
+      <h2><i>3</i>좌석 정보</h2>
+      <div class="pair">
+        <label>구역<input id="ticketZone" type="text" maxlength="10" placeholder="A"></label>
+        <label>열<input id="ticketRow" type="text" maxlength="10" placeholder="12"></label>
+      </div>
+      <div class="pair">
+        <label>좌석번호<input id="ticketSeat" type="text" maxlength="10" placeholder="07"></label>
+        <label>게이트<input id="ticketGate" type="text" maxlength="10" placeholder="3"></label>
+      </div>
+    </section>
+    <section>
+      <h2><i>4</i>색상 & 출력 크기</h2>
+      <div class="color-line">
+        <label for="ticketBg">티켓 색상</label>
+        <input id="ticketBg" type="color" value="#f4efe3">
+        <button id="ticketWhite" class="text-button">흰색</button>
+      </div>
+      <label class="sr-only" for="ticketSize">출력 크기</label>
+      <select id="ticketSize">
+        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
+        <option value="1320,2868">iPhone · 1320 × 2868</option>
+        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
+        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
+      </select>
     </section>
   </div>
 
