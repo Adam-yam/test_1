@@ -5,6 +5,7 @@ const canvas = $('preview'), ctx = canvas.getContext('2d');
 const state = {mode:'music',image:null,palette:['#dce1e6','#bdc6d0','#8997a5','#586978','#2c3b48'],start:0,raf:0,picking:false,busy:false,gif:null,url:null,loadToken:0};
 const DURATION = 3600, SHUTTER = 2460;
 let photoRect = null;
+let previewTime = 0, previewPlaying = false, resumePreview = false;
 const blurBuffer = document.createElement('canvas');
 const number = id => Number($(id).value);
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
@@ -49,12 +50,43 @@ function focus(c,w,h,time){const t=clamp(time,0,DURATION),kind=$('camera').value
 }
 function draw(c,w,h,time=3200){if(state.mode==='music')return music(c,w,h);focus(c,w,h,time);}
 function render(time=3200){if(!state.image)return;const[w,h]=dimensions(),scale=Math.min(1,900/Math.max(w,h));const pw=Math.round(w*scale),ph=Math.round(h*scale);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}ctx.setTransform(scale,0,0,scale,0,0);photoRect=draw(ctx,w,h,time);ctx.setTransform(1,0,0,1,0,0);}
-function stop(){cancelAnimationFrame(state.raf);state.raf=0;}
-function animate(now){if(state.busy||!state.image||state.mode!=='focus')return;const elapsed=now-state.start;const loop=$('loop').checked;render(loop?elapsed%DURATION:Math.min(elapsed,DURATION));if(loop||elapsed<DURATION)state.raf=requestAnimationFrame(animate);}
-function replay(){stop();state.start=performance.now();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)state.raf=requestAnimationFrame(animate);else render();}
-function refresh(restart=false){$('dimensions').textContent=dimensions().join(' × ');render();if(state.mode==='focus'&&restart)replay();}
-function updateButtons(){for(const id of ['png','gif','replay','eyedropper','clear'])$(id).disabled=!state.image||state.busy;$('photo').disabled=state.busy;$('choose').disabled=state.busy;}
-function setMode(mode){if(state.busy)return;state.mode=mode;stop();setPicking(false);document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===mode)));$('musicPanel').hidden=mode!=='music';$('focusPanel').hidden=mode!=='focus';$('gif').hidden=mode!=='focus';$('replay').hidden=mode!=='focus';$('modeNote').textContent=mode==='music'?'사진과 음악을 한 장에':'흐림에서 선명함으로, 3.6초';refresh(true);}
+function previewUI(){
+ $('playPause').textContent=previewPlaying?'Ⅱ 일시정지':'▶ 재생';
+ $('timeline').value=String(Math.round(previewTime));
+ $('previewTime').textContent=(previewTime/1000).toFixed(1)+' / 3.6초';
+}
+function stop(){cancelAnimationFrame(state.raf);state.raf=0;previewPlaying=false;previewUI();}
+function animate(now){
+ state.raf=0;
+ if(state.busy||!state.image||state.mode!=='focus'||document.hidden){stop();return;}
+ const elapsed=now-state.start,loop=$('loop').checked;
+ previewTime=loop?elapsed%DURATION:Math.min(elapsed,DURATION);
+ render(Math.min(53,Math.floor(previewTime/(DURATION/54)))*DURATION/54);
+ if(!loop&&elapsed>=DURATION)previewPlaying=false;
+ previewUI();
+ if(previewPlaying)state.raf=requestAnimationFrame(animate);
+}
+function play(){
+ if(!state.image||state.busy||state.mode!=='focus')return;
+ stop();if(previewTime>=DURATION)previewTime=0;
+ state.start=performance.now()-previewTime;previewPlaying=true;previewUI();
+ state.raf=requestAnimationFrame(animate);
+}
+function replay(manual=false){
+ stop();previewTime=0;
+ if(!state.image||state.mode!=='focus'){previewUI();return;}
+ if(manual||!matchMedia('(prefers-reduced-motion: reduce)').matches)play();
+ else{render(0);previewUI();}
+}
+function refresh(restart=false){
+ $('dimensions').textContent=dimensions().join(' × ');
+ if(state.mode==='focus'){
+  if(restart)replay();
+  else render(Math.min(53,Math.floor(previewTime/(DURATION/54)))*DURATION/54);
+ }else render();
+}
+function updateButtons(){for(const id of ['png','gif','replay','playPause','timeline','eyedropper','clear'])$(id).disabled=!state.image||state.busy;$('photo').disabled=state.busy;$('choose').disabled=state.busy;}
+function setMode(mode){if(state.busy)return;state.mode=mode;stop();setPicking(false);document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===mode)));$('musicPanel').hidden=mode!=='music';$('focusPanel').hidden=mode!=='focus';$('gif').hidden=mode!=='focus';$('replay').hidden=mode!=='focus';$('motionControls').hidden=mode!=='focus';$('modeNote').textContent=mode==='music'?'사진과 음악을 한 장에':'효과 미리보기 · 3.6초';refresh(true);}
 function paletteUI(){const root=$('palette');root.replaceChildren();state.palette.forEach(color=>{const b=document.createElement('button');b.className='swatch';b.style.backgroundColor=color;b.title=color.toUpperCase();b.setAttribute('aria-label',color+' 배경색으로 사용');b.onclick=()=>{if(state.busy)return;$('background').value=color;render();};root.append(b);});}
 function extractPalette(px=null,py=null){const im=state.image,c=document.createElement('canvas');c.width=c.height=80;const g=c.getContext('2d',{willReadFrequently:true});if(px===null)g.drawImage(im,0,0,80,80);else{const side=Math.min(im.width,im.height)*.32;g.drawImage(im,clamp(px-side/2,0,im.width-side),clamp(py-side/2,0,im.height-side),side,side,0,0,80,80);}const data=g.getImageData(0,0,80,80).data;const bins=new Map();for(let i=0;i<data.length;i+=4){if(data[i+3]<128)continue;const rgb=[data[i],data[i+1],data[i+2]],key=rgb.map(v=>Math.floor(v/32)).join(',');let bin=bins.get(key);if(!bin){bin={n:0,sum:[0,0,0]};bins.set(key,bin);}bin.n++;rgb.forEach((v,j)=>bin.sum[j]+=v);}const chosen=[];for(const b of [...bins.values()].sort((a,b)=>b.n-a.n)){const col=b.sum.map(v=>v/b.n);if(chosen.every(old=>Math.hypot(...col.map((v,i)=>v-old[i]))>48))chosen.push(col);if(chosen.length===5)break;}if(!chosen.length)chosen.push([220,220,220]);while(chosen.length<5){const col=chosen[0],k=chosen.length;chosen.push(col.map(v=>clamp(v+(k%2?1:-1)*k*22,0,255)));}chosen.sort((a,b)=>b.reduce((x,v)=>x+v,0)-a.reduce((x,v)=>x+v,0));state.palette=chosen.map(col=>hex(...col));paletteUI();$('pickHint').textContent='색상을 누르면 배경에 적용됩니다.';}
 async function loadPhoto(file){if(!file||state.busy)return;if(!file.type.startsWith('image/')){status('이미지 파일을 선택해 주세요.',true);return;}if(file.size>25*1024*1024){status('25 MB 이하의 이미지를 선택해 주세요.',true);return;}const token=++state.loadToken;const url=URL.createObjectURL(file);status('사진을 불러오는 중…');try{const im=new Image();im.src=url;await im.decode();if(token!==state.loadToken)return;const limit=4096,scale=Math.min(1,limit/Math.max(im.naturalWidth,im.naturalHeight));const reduced=document.createElement('canvas');reduced.width=Math.max(1,Math.round(im.naturalWidth*scale));reduced.height=Math.max(1,Math.round(im.naturalHeight*scale));reduced.getContext('2d').drawImage(im,0,0,reduced.width,reduced.height);state.image=reduced;$('zoom').value='1';$('panX').value=$('panY').value='0';extractPalette();$('empty').hidden=true;canvas.hidden=false;$('fileLabel').textContent=file.name||'붙여넣은 사진';updateButtons();refresh(true);status('준비되었습니다. 원하는 모습으로 편집해 보세요.');}catch{status('이 이미지를 열 수 없습니다. JPG 또는 PNG로 변환해 주세요.',true);}finally{URL.revokeObjectURL(url);$('photo').value='';}}
@@ -62,7 +94,7 @@ function setPicking(on){state.picking=on;$('eyedropper').setAttribute('aria-pres
 canvas.addEventListener('click',e=>{if(!state.picking||state.busy||!photoRect)return;const r=canvas.getBoundingClientRect(),[w,h]=dimensions(),x=(e.clientX-r.left)/r.width*w,y=(e.clientY-r.top)/r.height*h,p=photoRect;if(x<p.x||x>p.x+p.w||y<p.y||y>p.y+p.h)return;extractPalette(p.sx+(x-p.x)/p.w*p.sw,p.sy+(y-p.y)/p.h*p.sh);render();status('선택한 부분의 색상을 추출했습니다.');});
 function deliver(blob,filename){if(state.url)URL.revokeObjectURL(state.url);state.url=URL.createObjectURL(blob);const a=$('download');a.href=state.url;a.download=filename;a.hidden=false;a.click();}
 async function exportPNG(){if(!state.image||state.busy)return;setBusy(true);status('PNG 생성 중…');try{const[w,h]=dimensions(),off=document.createElement('canvas');off.width=w;off.height=h;draw(off.getContext('2d'),w,h);const blob=await new Promise(r=>off.toBlob(r,'image/png'));if(!blob)throw Error('PNG 생성 실패');deliver(blob,`scene-${state.mode}-${w}x${h}.png`);status('PNG 저장을 시작했습니다.');}catch{status('PNG 저장에 실패했습니다. 다시 시도해 주세요.',true);}finally{setBusy(false);}}
-function setBusy(busy){state.busy=busy;document.querySelectorAll('.editor input,.editor select,.editor textarea,.tabs button,.editor .text-button,.swatch').forEach(el=>el.disabled=busy);updateButtons();if(busy)stop();else if(state.mode==='focus')replay();}
+function setBusy(busy){state.busy=busy;document.querySelectorAll('.editor input,.editor select,.editor textarea,.tabs button,.editor .text-button,.swatch').forEach(el=>el.disabled=busy);updateButtons();if(busy){resumePreview=previewPlaying;stop();}else if(state.mode==='focus'){refresh();if(resumePreview)play();resumePreview=false;}}
 function exportGIF(){if(!state.image||state.busy)return;if(typeof GIF==='undefined'){status('GIF 모듈을 불러오지 못했습니다. vendor 폴더가 함께 배포되었는지 확인해 주세요.',true);return;}setBusy(true);$('cancel').hidden=false;$('progress').hidden=false;$('progress').value=0;status('GIF 프레임을 만드는 중…');const[w,h]=dimensions(),scale=number('quality')/Math.max(w,h),off=document.createElement('canvas');off.width=Math.round(w*scale);off.height=Math.round(h*scale);const g=off.getContext('2d');const gif=new GIF({workers:2,quality:8,width:off.width,height:off.height,workerScript:'./vendor/gif.worker.js',repeat:$('loop').checked?0:-1,background:'#151719'});state.gif=gif;let frame=0,done=false;const total=54;let timer;
  const finish=()=>{if(done)return;done=true;clearTimeout(timer);for(const worker of [...(gif.activeWorkers||[]),...(gif.freeWorkers||[])])worker.terminate();state.gif=null;$('cancel').hidden=true;$('progress').hidden=true;setBusy(false);};
  gif.on('progress',p=>{$('progress').value=25+p*75;status(`GIF 인코딩 중… ${Math.round(p*100)}%`);});gif.on('finished',blob=>{deliver(blob,`scene-focus-${off.width}x${off.height}.gif`);finish();status('GIF 저장을 시작했습니다.');});gif.on('abort',()=>{finish();status('GIF 생성을 취소했습니다.');});
@@ -73,9 +105,18 @@ function exportGIF(){if(!state.image||state.busy)return;if(typeof GIF==='undefin
 $('photo').onchange=e=>loadPhoto(e.target.files[0]);$('choose').onclick=()=>$('photo').click();for(const event of ['dragenter','dragover'])$('drop').addEventListener(event,e=>{e.preventDefault();$('drop').classList.add('dragover');});for(const event of ['dragleave','drop'])$('drop').addEventListener(event,e=>{e.preventDefault();$('drop').classList.remove('dragover');if(event==='drop')loadPhoto(e.dataTransfer.files[0]);});document.addEventListener('paste',e=>{const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(item){e.preventDefault();loadPhoto(item.getAsFile());}});
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const mode=e.key==='Home'?'music':e.key==='End'?'focus':state.mode==='music'?'focus':'music';setMode(mode);$(mode+'Tab').focus();});
 for(const id of ['title','artist','elapsed','duration','background','showPalette','size','zoom','panX','panY','caption','captionColor','italic','camera','orientation','loop'])$(id).addEventListener('input',()=>refresh(['camera','orientation','loop'].includes(id)));
-$('white').onclick=()=>{$('background').value='#ffffff';render();};$('eyedropper').onclick=()=>setPicking(!state.picking);$('replay').onclick=replay;$('png').onclick=exportPNG;$('gif').onclick=exportGIF;$('cancel').onclick=()=>state.cancel?.();
-$('clear').onclick=()=>{if(state.busy)return;state.loadToken++;stop();state.image=null;setPicking(false);canvas.hidden=true;$('empty').hidden=false;$('fileLabel').textContent='사진 선택';$('download').hidden=true;if(state.url){URL.revokeObjectURL(state.url);state.url=null;}updateButtons();status('사진을 선택하면 저장할 수 있습니다.');};
+$('white').onclick=()=>{$('background').value='#ffffff';render();};$('eyedropper').onclick=()=>setPicking(!state.picking);$('replay').onclick=()=>replay(true);$('png').onclick=exportPNG;$('gif').onclick=exportGIF;$('cancel').onclick=()=>state.cancel?.();
+$('clear').onclick=()=>{if(state.busy)return;state.loadToken++;stop();previewTime=0;previewUI();state.image=null;setPicking(false);canvas.hidden=true;$('empty').hidden=false;$('fileLabel').textContent='사진 선택';$('download').hidden=true;if(state.url){URL.revokeObjectURL(state.url);state.url=null;}updateButtons();status('사진을 선택하면 저장할 수 있습니다.');};
 $('share').onclick=async()=>{const url=location.href.split('#')[0];try{if(navigator.share){await navigator.share({title:'SCENE Studio',text:'사진으로 만드는 포스터와 모션',url});}else{await navigator.clipboard.writeText(url);status('페이지 주소를 복사했습니다.');}}catch(e){if(e.name!=='AbortError')status('주소를 복사하지 못했습니다. 브라우저 주소창에서 복사해 주세요.',true);}};
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else if(state.mode==='focus'&&state.image&&!state.busy)replay();});window.addEventListener('beforeunload',()=>{if(state.url)URL.revokeObjectURL(state.url);});paletteUI();
+let resumeVisible=false;
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){resumeVisible=previewPlaying;stop();}
+ else if(resumeVisible){resumeVisible=false;play();}
+});
+$('playPause').onclick=()=>{if(previewPlaying)stop();else play();};
+$('timeline').addEventListener('input',()=>{
+ if(!state.image||state.busy)return;
+ const time=number('timeline');stop();previewTime=time;refresh();previewUI();
+});window.addEventListener('beforeunload',()=>{if(state.url)URL.revokeObjectURL(state.url);});paletteUI();
 
 for(const id of ['elapsed','duration']) $(id).addEventListener('change',()=>{const v=$(id).value.trim();if(!/^\d{1,2}:[0-5]\d$/.test(v)){$(id).value=id==='elapsed'?'1:24':'3:48';status('시간은 분:초 형식으로 입력해 주세요. 예: 3:48',true);}render();});

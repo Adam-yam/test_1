@@ -143,6 +143,11 @@
     <span id="modeNote">사진과 음악을 한 장에</span>
     <button id="replay" class="quiet" hidden disabled>↻ 다시 재생</button>
   </div>
+  <div id="motionControls" class="motion-controls" hidden>
+    <button id="playPause" class="quiet" disabled>▶ 재생</button>
+    <input id="timeline" type="range" min="0" max="3600" step="1" value="0" aria-label="포커스 모션 재생 위치" disabled>
+    <span id="previewTime">0.0 / 3.6초</span>
+  </div>
   <div class="export-bar">
     <p id="status" role="status" aria-live="polite">사진을 선택하면 저장할 수 있습니다.</p>
     <div class="export-actions">

@@ -191,3 +191,9 @@ progress{width:100%;accent-color:var(--ink);height:4px}
   #empty{padding:18px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.motion-controls{display:flex;align-items:center;gap:12px;margin:0 0 14px;min-width:0}
+.motion-controls button{flex:none;min-width:96px;padding:8px;font-size:12px}
+.motion-controls input[type=range]{flex:1;min-width:0;width:auto;margin:0}
+#previewTime{flex:none;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(max-width:620px){.motion-controls{gap:6px}.preview-bottom{flex-wrap:wrap;gap:4px}}
