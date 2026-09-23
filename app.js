@@ -18,7 +18,7 @@ function rect(c,x,y,w,h,r=0){c.beginPath();c.roundRect(x,y,w,h,r);c.fill();}
 function line(c,x1,y1,x2,y2,width=2){c.lineWidth=width;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
 function text(c,t,x,y,size,color,weight=400,align='left',max=Infinity,italic=false){c.fillStyle=color;c.font=`${italic?'italic ':''}${weight} ${size}px Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif`;c.textAlign=align;c.textBaseline='alphabetic';let out=t;if(c.measureText(out).width>max){while(out.length && c.measureText(out+'…').width>max)out=out.slice(0,-1);out+='…';}c.fillText(out,x,y);}
 function crop(w,h,extraZoom=1){const im=state.image,z=number('zoom')*extraZoom,scale=Math.max(w/im.width,h/im.height)*z;const sw=w/scale,sh=h/scale;return {sx:(im.width-sw)*(number('panX')+1)/2,sy:(im.height-sh)*(number('panY')+1)/2,sw,sh};}
-function photo(c,x,y,w,h,{blur=0,shake=0,radius=0}={}){const p=crop(w,h,1);c.save();c.beginPath();c.roundRect(x,y,w,h,radius);c.clip();if(blur && typeof c.filter!=='string'){
+function photo(c,x,y,w,h,{blur=0,shake=0,radius=0,extraZoom=1}={}){const p=crop(w,h,extraZoom);c.save();c.beginPath();c.roundRect(x,y,w,h,radius);c.clip();if(blur && typeof c.filter!=='string'){
  const low=Math.max(10,Math.round(Math.min(w,h)/Math.max(2,blur*1.8)));
  blurBuffer.width=Math.max(2,Math.round(w/Math.min(w,h)*low));blurBuffer.height=Math.max(2,Math.round(h/Math.min(w,h)*low));
  const bc=blurBuffer.getContext('2d');bc.drawImage(state.image,p.sx,p.sy,p.sw,p.sh,0,0,blurBuffer.width,blurBuffer.height);
@@ -49,12 +49,21 @@ function vhsFX(c,w,h,t,base,area,pr){
  const grad=c.createRadialGradient(w/2,h/2,base*.3,w/2,h/2,base*.75);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.55)');c.fillStyle=grad;c.fillRect(0,0,w,h);
  if(t%620<26){c.save();const gy=(Math.sin(t*7)*.5+.5)*h;c.globalAlpha=.4;c.fillStyle='#fff';c.fillRect(0,gy,w,base*.012);c.restore();}
 }
-function focus(c,w,h,time){const t=clamp(time,0,DURATION),kind=$('camera').value,isVHS=kind==='vhs',base=Math.min(w,h),m=base*.055;const seek=clamp((t-650)/1300,0,1),e=seek*seek*(3-2*seek),locked=t>=1950;const blur=(1-e)*base*.012,shake=t<1950?Math.sin(t/91)*base*.002*(1-e):0;const accent=kind==='pro'?'#73dbab':isVHS?'#ff2d55':kind==='grid'?'#91c7ff':'#ffffff';
- c.fillStyle=isVHS?'#070707':'#151719';c.fillRect(0,0,w,h);const top=base*.115,bottom=base*.19,area={x:m,y:top,w:w-2*m,h:h-top-bottom};const jx=isVHS?Math.sin(t/45)*base*.0015+(t%171<8?base*.012:0):0;const pr=photo(c,area.x+jx,area.y,area.w,area.h,{blur,shake,radius:kind==='clean'?base*.025:0});
+function parallaxBG(c,w,h,t){
+ const zoom=1.34+Math.sin(t/900)*.015,p=crop(w,h,zoom),driftX=Math.sin(t/1400)*w*.02,driftY=Math.cos(t/1700)*h*.014;
+ c.save();
+ if(typeof c.filter==='string'){c.filter=`blur(${Math.round(w*.035)}px)`;c.drawImage(state.image,p.sx,p.sy,p.sw,p.sh,driftX,driftY,w,h);c.filter='none';}
+ else{blurBuffer.width=140;blurBuffer.height=Math.round(140*h/w);const bc=blurBuffer.getContext('2d');bc.drawImage(state.image,p.sx,p.sy,p.sw,p.sh,0,0,blurBuffer.width,blurBuffer.height);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(blurBuffer,driftX,driftY,w,h);}
+ c.restore();
+ c.fillStyle='rgba(8,10,14,.4)';c.fillRect(0,0,w,h);
+}
+function focus(c,w,h,time){const t=clamp(time,0,DURATION),kind=$('camera').value,isVHS=kind==='vhs',isParallax=kind==='parallax',base=Math.min(w,h),m=base*.055;const seek=clamp((t-650)/1300,0,1),e=seek*seek*(3-2*seek),locked=t>=1950;const blur=(1-e)*base*.012,shake=t<1950?Math.sin(t/91)*base*.002*(1-e):0;const accent=kind==='pro'?'#73dbab':isVHS?'#ff2d55':isParallax?'#c9a6ff':kind==='grid'?'#91c7ff':'#ffffff';const zProg=clamp(t/DURATION,0,1),zEase=zProg*zProg*(3-2*zProg);
+ if(isParallax)parallaxBG(c,w,h,t);else{c.fillStyle=isVHS?'#070707':'#151719';c.fillRect(0,0,w,h);}const top=base*.115,bottom=base*.19,area={x:m,y:top,w:w-2*m,h:h-top-bottom};const jx=isVHS?Math.sin(t/45)*base*.0015+(t%171<8?base*.012:0):0;const pr=photo(c,area.x+jx,area.y,area.w,area.h,{blur,shake,radius:kind==='clean'?base*.025:0,extraZoom:isParallax?1+zEase*.08:1});
  if(kind==='grid'){c.save();c.strokeStyle='#ffffff45';for(let i=1;i<3;i++){line(c,area.x+area.w*i/3,area.y,area.x+area.w*i/3,area.y+area.h,1);line(c,area.x,area.y+area.h*i/3,area.x+area.w,area.y+area.h*i/3,1);}c.restore();}
  if(isVHS){const blink=Math.sin(t/140)>0;if(blink){c.fillStyle=accent;c.beginPath();c.arc(m+base*.012,base*.062,base*.011,0,Math.PI*2);c.fill();}text(c,'REC',m+base*.03,base*.068,base*.022,'#eef1f4',600);const secs=t/1000,tc=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(Math.floor(secs%60)).padStart(2,'0')}:${String(Math.floor((secs*30)%30)).padStart(2,'0')}`;text(c,tc,w-m,base*.068,base*.02,'#f5c94d',500,'right');}
+ else if(isParallax){text(c,'PARALLAX / ZOOM',m,base*.068,base*.022,'#eef1f4',500);text(c,Math.round((1+zEase*.08)*100)+'%',w-m,base*.068,base*.02,accent,500,'right');}
  else{text(c,kind==='pro'?'MANUAL / 50 MM':kind==='grid'?'FRAME / 3 × 3':'FOCUS / AUTO',m,base*.068,base*.022,'#eef1f4',500);text(c,locked?'FOCUS LOCKED':'FINDING FOCUS',w-m,base*.068,base*.018,locked?accent:'#a8afb7',400,'right');}
- if(!isVHS){const cx=w/2+shake,cy=area.y+area.h*.46,s=base*(.19-.05*e);c.strokeStyle=accent;c.globalAlpha=locked?1:.65+.3*Math.sin(t/100);c.lineWidth=base*.003;for(const [dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1]]){c.beginPath();c.moveTo(cx+dx*s/2,cy+dy*(s/2-s*.2));c.lineTo(cx+dx*s/2,cy+dy*s/2);c.lineTo(cx+dx*(s/2-s*.2),cy+dy*s/2);c.stroke();}c.globalAlpha=1;}
+ if(!isVHS&&!isParallax){const cx=w/2+shake,cy=area.y+area.h*.46,s=base*(.19-.05*e);c.strokeStyle=accent;c.globalAlpha=locked?1:.65+.3*Math.sin(t/100);c.lineWidth=base*.003;for(const [dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1]]){c.beginPath();c.moveTo(cx+dx*s/2,cy+dy*(s/2-s*.2));c.lineTo(cx+dx*s/2,cy+dy*s/2);c.lineTo(cx+dx*(s/2-s*.2),cy+dy*s/2);c.stroke();}c.globalAlpha=1;}
  if(kind==='pro'){text(c,'1/125   F2.8   ISO 200',m+base*.03,area.y+area.h-base*.035,base*.022,'#ffffff',500);}
  if(isVHS){text(c,'SP · STEREO',m+base*.03,area.y+area.h-base*.035,base*.02,'#e9edef',500);}
  const cap=$('caption').value.trim();if(cap){c.save();c.shadowColor='#000';c.shadowBlur=base*.01;wrapped(c,cap,w/2,area.y+area.h-base*(kind==='pro'||isVHS?.1:.06),base*.04,area.w*.87,$('captionColor').value,$('italic').checked);c.restore();}
