@@ -26,8 +26,7 @@
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
     <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
-    <button id="photocardTab" role="tab" aria-selected="false" aria-controls="photocardPanel" data-mode="photocard">포토카드</button>
-    <button id="birthdayTab" role="tab" aria-selected="false" aria-controls="birthdayPanel" data-mode="birthday">생일</button>
+    <button id="cardTab" role="tab" aria-selected="false" aria-controls="cardPanel" data-mode="card">포토카드</button>
   </div>
 
   <section>
@@ -96,7 +95,6 @@
           <option value="pro">카메라 · 프로</option>
           <option value="vhs">캠코더 · VHS</option>
           <option value="parallax">패럴랙스 · 줌</option>
-          <option value="lightstick">라이트스틱 · 보케</option>
         </select>
       </label>
       <label>방향
@@ -167,60 +165,52 @@
     </section>
   </div>
 
-  <div id="photocardPanel" role="tabpanel" aria-labelledby="photocardTab" hidden>
+  <div id="cardPanel" role="tabpanel" aria-labelledby="cardTab" hidden>
     <section>
-      <h2><i>2</i>멤버 정보</h2>
-      <label>그룹명<input id="cardGroup" type="text" maxlength="40" placeholder="RESCENE"></label>
-      <label>멤버명<input id="cardMember" type="text" maxlength="40" placeholder="MEMBER"></label>
+      <h2><i>2</i>멤버</h2>
+      <label>멤버 선택
+        <select id="cardMember">
+          <option value="원이">원이</option>
+          <option value="리브">리브</option>
+          <option value="미나미">미나미</option>
+          <option value="메이">메이</option>
+          <option value="제나">제나</option>
+          <option value="custom">직접 입력</option>
+        </select>
+      </label>
+      <label id="cardNameWrap" hidden>이름<input id="cardName" type="text" maxlength="12" placeholder="이름"></label>
+    </section>
+    <section>
+      <h2><i>3</i>카드 정보</h2>
+      <label>한마디<input id="cardCaption" type="text" maxlength="40" placeholder="MY BIAS"></label>
+      <label>혈액형
+        <select id="cardBlood">
+          <option value="">선택 안 함</option>
+          <option>A</option>
+          <option>B</option>
+          <option>O</option>
+          <option>AB</option>
+        </select>
+      </label>
     </section>
     <section>
       <div class="section-title">
-        <h2><i>3</i>카드 뒷면</h2>
+        <h2><i>4</i>디자인</h2>
+        <button id="cardFlip" class="text-button">뒷면 보기</button>
       </div>
-      <div class="pair">
-        <label>생일<input id="cardBday" type="text" maxlength="20" placeholder="01.01"></label>
-        <label>혈액형<input id="cardBlood" type="text" maxlength="10" placeholder="O"></label>
-      </div>
-      <label>한마디<textarea id="cardMsg" rows="2" maxlength="80" placeholder="매일이 콘서트 같기를"></textarea></label>
-      <label class="check"><input id="cardBack" type="checkbox"> 뒷면 보기</label>
-    </section>
-    <section>
-      <h2><i>4</i>색상 & 출력 크기</h2>
       <div class="color-line">
         <label for="cardBg">카드 색상</label>
-        <input id="cardBg" type="color" value="#141216">
+        <input id="cardBg" type="color" value="#ffffff">
         <button id="cardWhite" class="text-button">흰색</button>
       </div>
+      <label class="check"><input id="cardHolo" type="checkbox" checked> 홀로그램 효과</label>
+    </section>
+    <section>
+      <h2><i>5</i>출력 크기</h2>
       <label class="sr-only" for="cardSize">출력 크기</label>
       <select id="cardSize">
-        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
-        <option value="1320,2868">iPhone · 1320 × 2868</option>
-        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
-        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
-      </select>
-    </section>
-  </div>
-
-  <div id="birthdayPanel" role="tabpanel" aria-labelledby="birthdayTab" hidden>
-    <section>
-      <h2><i>2</i>생일 정보</h2>
-      <label>이름<input id="bdayMember" type="text" maxlength="40" placeholder="MEMBER"></label>
-      <label>생일 날짜<input id="bdayDate" type="text" maxlength="10" placeholder="01.01"></label>
-      <label>축하 메시지<textarea id="bdayMsg" rows="2" maxlength="80" placeholder="생일 축하해"></textarea></label>
-    </section>
-    <section>
-      <h2><i>3</i>색상 & 출력 크기</h2>
-      <div class="color-line">
-        <label for="bdayBg">배경색</label>
-        <input id="bdayBg" type="color" value="#fff6e9">
-        <button id="bdayWhite" class="text-button">흰색</button>
-      </div>
-      <label class="sr-only" for="bdaySize">출력 크기</label>
-      <select id="bdaySize">
-        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
-        <option value="1320,2868">iPhone · 1320 × 2868</option>
-        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
-        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
+        <option value="650,1016">표준 포토카드 · 650 × 1016</option>
+        <option value="1300,2032" selected>고화질 · 1300 × 2032</option>
       </select>
     </section>
   </div>
