@@ -92,6 +92,11 @@ h2 i{
 .upload strong{font-size:14px;max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .upload small{font-size:12px;color:var(--muted)}
 
+.lifecut-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upload.small{min-height:88px}
+.upload.small.filled{border-style:solid;border-color:var(--ink);background:#eef1f4}
+.upload.small.filled small{color:var(--ink);font-weight:600}
+
 .hint{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 0}
 
 label{display:block;font-size:13px;color:var(--muted);margin-bottom:14px}

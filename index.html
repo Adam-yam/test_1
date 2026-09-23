@@ -26,9 +26,12 @@
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
     <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
-    <button id="birthdayTab" role="tab" aria-selected="false" aria-controls="birthdayPanel" data-mode="birthday">생일 카운트다운</button>
+    <button id="holoTab" role="tab" aria-selected="false" aria-controls="holoPanel" data-mode="holo">홀로그램 포카</button>
+    <button id="lifecutTab" role="tab" aria-selected="false" aria-controls="lifecutPanel" data-mode="lifecut">인생네컷</button>
+    <button id="receiptTab" role="tab" aria-selected="false" aria-controls="receiptPanel" data-mode="receipt">감성 영수증</button>
   </div>
 
+  <div id="sharedPhotoSection">
   <section>
     <div class="section-title">
       <h2><i>1</i>사진</h2>
@@ -48,6 +51,7 @@
       <label>세로 위치 <input id="panY" type="range" min="-1" max="1" step="0.01" value="0"></label>
     </details>
   </section>
+  </div>
 
   <div id="musicPanel" role="tabpanel" aria-labelledby="musicTab">
     <section>
@@ -166,45 +170,62 @@
     </section>
   </div>
 
-  <div id="birthdayPanel" role="tabpanel" aria-labelledby="birthdayTab" hidden>
+  <div id="holoPanel" role="tabpanel" aria-labelledby="holoTab" hidden>
     <section>
-      <h2><i>2</i>멤버</h2>
-      <label>멤버 선택
-        <select id="bdMember">
-          <option value="원이">원이</option>
-          <option value="리브">리브</option>
-          <option value="미나미">미나미</option>
-          <option value="메이">메이</option>
-          <option value="제나">제나</option>
-          <option value="custom">직접 입력</option>
-        </select>
-      </label>
-      <div id="bdCustomWrap" hidden>
-        <label>이름<input id="bdName" type="text" maxlength="12" placeholder="이름"></label>
-        <label>생일 (월.일)<input id="bdDate" type="text" maxlength="5" placeholder="5.25"></label>
-      </div>
+      <h2><i>2</i>카드 정보</h2>
+      <label>이름<input id="holoName" type="text" maxlength="20" placeholder="RESCENE"></label>
+      <label>카드 번호<input id="holoNumber" type="text" maxlength="10" placeholder="01/25"></label>
     </section>
     <section>
-      <h2><i>3</i>카드 정보</h2>
-      <label>한마디<input id="bdCaption" type="text" maxlength="60" placeholder="생일 축하해!"></label>
-    </section>
-    <section>
-      <h2><i>4</i>색상</h2>
+      <h2><i>3</i>프레임 & 홀로그램</h2>
       <div class="color-line">
-        <label for="bdBg">배경색</label>
-        <input id="bdBg" type="color" value="#ffffff">
-        <button id="bdWhite" class="text-button">흰색</button>
+        <label for="holoFrame">프레임 색상</label>
+        <input id="holoFrame" type="color" value="#ffffff">
+        <button id="holoWhite" class="text-button">흰색</button>
       </div>
+      <label>홀로그램 강도<input id="holoIntensity" type="range" min="0.2" max="1" step="0.05" value="0.7"></label>
+    </section>
+  </div>
+
+  <div id="lifecutPanel" role="tabpanel" aria-labelledby="lifecutTab" hidden>
+    <section>
+      <div class="section-title">
+        <h2><i>1</i>사진 4장</h2>
+        <button id="lifecutClear" class="text-button" disabled>모두 지우기</button>
+      </div>
+      <div class="lifecut-slots">
+        <label class="upload small" data-slot="0"><input class="lifecutInput" data-index="0" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>1</small></label>
+        <label class="upload small" data-slot="1"><input class="lifecutInput" data-index="1" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>2</small></label>
+        <label class="upload small" data-slot="2"><input class="lifecutInput" data-index="2" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>3</small></label>
+        <label class="upload small" data-slot="3"><input class="lifecutInput" data-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>4</small></label>
+      </div>
+      <p class="hint">JPG · PNG · WebP · AVIF / 슬롯당 최대 25 MB</p>
     </section>
     <section>
-      <h2><i>5</i>출력 크기</h2>
-      <label class="sr-only" for="bdSize">출력 크기</label>
-      <select id="bdSize">
-        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
-        <option value="1320,2868">iPhone · 1320 × 2868</option>
-        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
-        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
-      </select>
+      <h2><i>2</i>프레임</h2>
+      <div class="color-line">
+        <label for="lifecutFrame">프레임 색상</label>
+        <input id="lifecutFrame" type="color" value="#ffffff">
+        <button id="lifecutWhite" class="text-button">흰색</button>
+      </div>
+      <label class="check"><input id="lifecutDate" type="checkbox" checked> 촬영 날짜 표시</label>
+    </section>
+    <section>
+      <h2><i>3</i>한마디</h2>
+      <label>하단 문구<input id="lifecutCaption" type="text" maxlength="40" placeholder="RESCENE with me"></label>
+    </section>
+  </div>
+
+  <div id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab" hidden>
+    <section>
+      <h2><i>2</i>영수증 정보</h2>
+      <label>상단 제목<input id="receiptTitle" type="text" maxlength="30" placeholder="SCENE RECEIPT"></label>
+      <label>한마디<input id="receiptCaption" type="text" maxlength="60" placeholder="오늘의 최애 순간"></label>
+      <label>날짜<input id="receiptDate" type="text" maxlength="20" placeholder="2026.09.23"></label>
+    </section>
+    <section>
+      <h2><i>3</i>스타일</h2>
+      <label class="check"><input id="receiptMono" type="checkbox" checked> 흑백 · 망점 효과</label>
     </section>
   </div>
 
