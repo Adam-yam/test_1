@@ -1,19 +1,159 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fafafa"><meta name="description" content="사진으로 만드는 음악 포스터와 포커스 모션. SCENE Studio"><title>SCENE — Photo studio</title><link rel="stylesheet" href="./styles.css"><script src="./vendor/gif.js" defer></script><script src="./app.js" defer></script></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="사진으로 만드는 음악 포스터와 포커스 모션. SCENE Studio">
+<title>SCENE — Photo studio</title>
+<link rel="stylesheet" href="./styles.css">
+<script src="./vendor/gif.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
 <body>
-<header><a class="brand" href="./" aria-label="SCENE Studio 홈">SCENE<span>STUDIO</span></a><div class="header-right"><span class="private">사진은 이 기기에서만 처리됩니다</span><button id="share" class="quiet">공유</button></div></header>
+<header>
+  <a class="brand" href="./" aria-label="SCENE Studio 홈">SCENE<span>STUDIO</span></a>
+  <div class="header-right">
+    <span class="private">사진은 이 기기에서만 처리됩니다</span>
+    <button id="share" class="quiet">공유</button>
+  </div>
+</header>
+
 <main>
 <aside class="editor">
-<div class="tabs" role="tablist" aria-label="작업 종류"><button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button><button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button></div>
-<section><div class="section-title"><h2>01 <span>사진</span></h2><button id="clear" class="text-button" disabled>지우기</button></div><label class="upload" id="drop"><input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><strong id="fileLabel">사진 선택</strong><small>여기에 끌어놓거나 붙여넣기</small></label><p class="hint">JPG · PNG · WebP · AVIF / 최대 25 MB</p>
-<details><summary>사진 위치 조정</summary><label>확대 <input id="zoom" type="range" min="1" max="2.5" step="0.01" value="1"></label><label>가로 위치 <input id="panX" type="range" min="-1" max="1" step="0.01" value="0"></label><label>세로 위치 <input id="panY" type="range" min="-1" max="1" step="0.01" value="0"></label></details></section>
-<div id="musicPanel" role="tabpanel" aria-labelledby="musicTab"><section><h2>02 <span>트랙 정보</span></h2><label>곡명<input id="title" type="text" maxlength="90" placeholder="노래의 이름"></label><label>아티스트<input id="artist" type="text" maxlength="90" placeholder="아티스트의 이름"></label><div class="pair"><label>현재 시간<input id="elapsed" type="text" value="1:24" pattern="[0-9]{1,2}:[0-5][0-9]"></label><label>전체 시간<input id="duration" type="text" value="3:48" pattern="[0-9]{1,2}:[0-5][0-9]"></label></div></section>
-<section><div class="section-title"><h2>03 <span>색상</span></h2><button id="eyedropper" class="text-button" aria-pressed="false" disabled>스포이트</button></div><div id="palette" class="palette" aria-label="사진에서 추출한 색상"></div><p id="pickHint" class="hint">사진을 넣으면 다섯 가지 색을 추출합니다.</p><div class="color-line"><label for="background">배경색</label><input id="background" type="color" value="#ffffff"><button id="white" class="text-button">흰색</button></div><label class="check"><input id="showPalette" type="checkbox" checked> 포스터에 팔레트 표시</label></section>
-<section><h2>04 <span>출력 크기</span></h2><label class="sr-only" for="size">출력 크기</label><select id="size"><option value="1080,1920">기본 세로 · 1080 × 1920</option><option value="1320,2868">iPhone · 1320 × 2868</option><option value="1080,2400">Android FHD+ · 1080 × 2400</option><option value="1440,3200">Android WQHD+ · 1440 × 3200</option></select></section></div>
-<div id="focusPanel" role="tabpanel" aria-labelledby="focusTab" hidden><section><h2>02 <span>촬영 스타일</span></h2><label>카메라<select id="camera"><option value="clean">iPhone · 클린</option><option value="grid">Galaxy · 그리드</option><option value="pro">카메라 · 프로</option></select></label><label>방향<select id="orientation"><option value="portrait">세로 · 9:16</option><option value="landscape">가로 · 16:9</option></select></label></section><section><h2>03 <span>자막</span></h2><label>사진 위의 한마디<textarea id="caption" rows="2" maxlength="120" placeholder="기억하고 싶은 순간"></textarea></label><div class="color-line"><label for="captionColor">자막 색상</label><input id="captionColor" type="color" value="#ffffff"></div><label class="check"><input id="italic" type="checkbox"> 기울임</label></section><section><h2>04 <span>모션 & 저장</span></h2><label class="check"><input id="loop" type="checkbox" checked> 반복 재생</label><label>GIF 크기<select id="quality"><option value="360">작게 · 긴 변 360 px</option><option value="540" selected>보통 · 긴 변 540 px</option><option value="720">크게 · 긴 변 720 px</option></select></label><p class="hint">3.6초 · 15 fps · PNG는 긴 변 1920 px</p></section></div>
-<footer class="editor-footer">SCENE / MAKE IT YOURS</footer>
+
+  <div class="tabs" role="tablist" aria-label="작업 종류">
+    <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
+    <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
+  </div>
+
+  <section>
+    <div class="section-title">
+      <h2><i>1</i>사진</h2>
+      <button id="clear" class="text-button" disabled>지우기</button>
+    </div>
+    <label class="upload" id="drop">
+      <input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif">
+      <span class="upload-icon">＋</span>
+      <strong id="fileLabel">사진 선택</strong>
+      <small>여기에 끌어놓거나 붙여넣기</small>
+    </label>
+    <p class="hint">JPG · PNG · WebP · AVIF / 최대 25 MB</p>
+    <details>
+      <summary>사진 위치 조정</summary>
+      <label>확대 <input id="zoom" type="range" min="1" max="2.5" step="0.01" value="1"></label>
+      <label>가로 위치 <input id="panX" type="range" min="-1" max="1" step="0.01" value="0"></label>
+      <label>세로 위치 <input id="panY" type="range" min="-1" max="1" step="0.01" value="0"></label>
+    </details>
+  </section>
+
+  <div id="musicPanel" role="tabpanel" aria-labelledby="musicTab">
+    <section>
+      <h2><i>2</i>트랙 정보</h2>
+      <label>곡명<input id="title" type="text" maxlength="90" placeholder="노래의 이름"></label>
+      <label>아티스트<input id="artist" type="text" maxlength="90" placeholder="아티스트의 이름"></label>
+      <div class="pair">
+        <label>현재 시간<input id="elapsed" type="text" value="1:24" pattern="[0-9]{1,2}:[0-5][0-9]"></label>
+        <label>전체 시간<input id="duration" type="text" value="3:48" pattern="[0-9]{1,2}:[0-5][0-9]"></label>
+      </div>
+    </section>
+    <section>
+      <div class="section-title">
+        <h2><i>3</i>색상</h2>
+        <button id="eyedropper" class="text-button" aria-pressed="false" disabled>스포이트</button>
+      </div>
+      <div id="palette" class="palette" aria-label="사진에서 추출한 색상"></div>
+      <p id="pickHint" class="hint">사진을 넣으면 다섯 가지 색을 추출합니다.</p>
+      <div class="color-line">
+        <label for="background">배경색</label>
+        <input id="background" type="color" value="#ffffff">
+        <button id="white" class="text-button">흰색</button>
+      </div>
+      <label class="check"><input id="showPalette" type="checkbox" checked> 포스터에 팔레트 표시</label>
+    </section>
+    <section>
+      <h2><i>4</i>출력 크기</h2>
+      <label class="sr-only" for="size">출력 크기</label>
+      <select id="size">
+        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
+        <option value="1320,2868">iPhone · 1320 × 2868</option>
+        <option value="1080,2400">Android FHD+ · 1080 × 2400</option>
+        <option value="1440,3200">Android WQHD+ · 1440 × 3200</option>
+      </select>
+    </section>
+  </div>
+
+  <div id="focusPanel" role="tabpanel" aria-labelledby="focusTab" hidden>
+    <section>
+      <h2><i>2</i>촬영 스타일</h2>
+      <label>카메라
+        <select id="camera">
+          <option value="clean">iPhone · 클린</option>
+          <option value="grid">Galaxy · 그리드</option>
+          <option value="pro">카메라 · 프로</option>
+        </select>
+      </label>
+      <label>방향
+        <select id="orientation">
+          <option value="portrait">세로 · 9:16</option>
+          <option value="landscape">가로 · 16:9</option>
+        </select>
+      </label>
+    </section>
+    <section>
+      <h2><i>3</i>자막</h2>
+      <label>사진 위의 한마디<textarea id="caption" rows="2" maxlength="120" placeholder="기억하고 싶은 순간"></textarea></label>
+      <div class="color-line">
+        <label for="captionColor">자막 색상</label>
+        <input id="captionColor" type="color" value="#ffffff">
+      </div>
+      <label class="check"><input id="italic" type="checkbox"> 기울임</label>
+    </section>
+    <section>
+      <h2><i>4</i>모션 & 저장</h2>
+      <label class="check"><input id="loop" type="checkbox" checked> 반복 재생</label>
+      <label>GIF 크기
+        <select id="quality">
+          <option value="360">작게 · 긴 변 360 px</option>
+          <option value="540" selected>보통 · 긴 변 540 px</option>
+          <option value="720">크게 · 긴 변 720 px</option>
+        </select>
+      </label>
+      <p class="hint">3.6초 · 15 fps · PNG는 긴 변 1920 px</p>
+    </section>
+  </div>
+
+  <footer class="editor-footer">SCENE / MAKE IT YOURS</footer>
 </aside>
-<div class="workspace"><div class="workspace-top"><span class="eyebrow">PREVIEW</span><span id="dimensions">1080 × 1920</span></div><div class="preview-area" id="previewArea"><div id="empty"><span class="empty-mark">＋</span><h2>사진 추가</h2><button id="choose" class="primary">사진 선택</button></div><canvas id="preview" hidden aria-label="결과물 미리보기"></canvas></div><div class="preview-bottom"><span id="modeNote">사진과 음악을 한 장에</span><button id="replay" class="quiet" hidden disabled>↻ 다시 재생</button></div><div class="export-bar"><p id="status" role="status" aria-live="polite">사진을 선택하면 저장할 수 있습니다.</p><div class="export-actions"><button id="png" class="primary" disabled>PNG 저장 <span>↓</span></button><button id="gif" class="primary" hidden disabled>GIF 저장 <span>↓</span></button><button id="cancel" hidden>취소</button></div><progress id="progress" max="100" value="0" hidden aria-label="GIF 생성 진행률"></progress><a id="download" hidden>파일 다시 다운로드</a></div></div>
+
+<div class="workspace">
+  <div class="workspace-top">
+    <span class="eyebrow">미리보기</span>
+    <span id="dimensions">1080 × 1920</span>
+  </div>
+  <div class="preview-area" id="previewArea">
+    <div id="empty">
+      <span class="empty-mark">＋</span>
+      <h2>사진 추가</h2>
+      <button id="choose" class="primary">사진 선택</button>
+    </div>
+    <canvas id="preview" hidden aria-label="결과물 미리보기"></canvas>
+  </div>
+  <div class="preview-bottom">
+    <span id="modeNote">사진과 음악을 한 장에</span>
+    <button id="replay" class="quiet" hidden disabled>↻ 다시 재생</button>
+  </div>
+  <div class="export-bar">
+    <p id="status" role="status" aria-live="polite">사진을 선택하면 저장할 수 있습니다.</p>
+    <div class="export-actions">
+      <button id="png" class="primary" disabled>PNG 저장 <span>↓</span></button>
+      <button id="gif" class="primary" hidden disabled>GIF 저장 <span>↓</span></button>
+      <button id="cancel" hidden>취소</button>
+    </div>
+    <progress id="progress" max="100" value="0" hidden aria-label="GIF 생성 진행률"></progress>
+    <a id="download" hidden>파일 다시 다운로드</a>
+  </div>
+</div>
 </main>
-</body></html>
+</body>
+</html>
