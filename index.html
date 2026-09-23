@@ -26,7 +26,7 @@
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
     <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
-    <button id="cardTab" role="tab" aria-selected="false" aria-controls="cardPanel" data-mode="card">포토카드</button>
+    <button id="birthdayTab" role="tab" aria-selected="false" aria-controls="birthdayPanel" data-mode="birthday">생일 카운트다운</button>
   </div>
 
   <section>
@@ -95,6 +95,7 @@
           <option value="pro">카메라 · 프로</option>
           <option value="vhs">캠코더 · VHS</option>
           <option value="parallax">패럴랙스 · 줌</option>
+          <option value="lightstick">라이트스틱 · 보케</option>
         </select>
       </label>
       <label>방향
@@ -165,11 +166,11 @@
     </section>
   </div>
 
-  <div id="cardPanel" role="tabpanel" aria-labelledby="cardTab" hidden>
+  <div id="birthdayPanel" role="tabpanel" aria-labelledby="birthdayTab" hidden>
     <section>
       <h2><i>2</i>멤버</h2>
       <label>멤버 선택
-        <select id="cardMember">
+        <select id="bdMember">
           <option value="원이">원이</option>
           <option value="리브">리브</option>
           <option value="미나미">미나미</option>
@@ -178,39 +179,31 @@
           <option value="custom">직접 입력</option>
         </select>
       </label>
-      <label id="cardNameWrap" hidden>이름<input id="cardName" type="text" maxlength="12" placeholder="이름"></label>
+      <div id="bdCustomWrap" hidden>
+        <label>이름<input id="bdName" type="text" maxlength="12" placeholder="이름"></label>
+        <label>생일 (월.일)<input id="bdDate" type="text" maxlength="5" placeholder="5.25"></label>
+      </div>
     </section>
     <section>
       <h2><i>3</i>카드 정보</h2>
-      <label>한마디<input id="cardCaption" type="text" maxlength="40" placeholder="MY BIAS"></label>
-      <label>혈액형
-        <select id="cardBlood">
-          <option value="">선택 안 함</option>
-          <option>A</option>
-          <option>B</option>
-          <option>O</option>
-          <option>AB</option>
-        </select>
-      </label>
+      <label>한마디<input id="bdCaption" type="text" maxlength="60" placeholder="생일 축하해!"></label>
     </section>
     <section>
-      <div class="section-title">
-        <h2><i>4</i>디자인</h2>
-        <button id="cardFlip" class="text-button">뒷면 보기</button>
-      </div>
+      <h2><i>4</i>색상</h2>
       <div class="color-line">
-        <label for="cardBg">카드 색상</label>
-        <input id="cardBg" type="color" value="#ffffff">
-        <button id="cardWhite" class="text-button">흰색</button>
+        <label for="bdBg">배경색</label>
+        <input id="bdBg" type="color" value="#ffffff">
+        <button id="bdWhite" class="text-button">흰색</button>
       </div>
-      <label class="check"><input id="cardHolo" type="checkbox" checked> 홀로그램 효과</label>
     </section>
     <section>
       <h2><i>5</i>출력 크기</h2>
-      <label class="sr-only" for="cardSize">출력 크기</label>
-      <select id="cardSize">
-        <option value="650,1016">표준 포토카드 · 650 × 1016</option>
-        <option value="1300,2032" selected>고화질 · 1300 × 2032</option>
+      <label class="sr-only" for="bdSize">출력 크기</label>
+      <select id="bdSize">
+        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
+        <option value="1320,2868">iPhone · 1320 × 2868</option>
+        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
+        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
       </select>
     </section>
   </div>

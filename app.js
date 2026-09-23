@@ -2,7 +2,7 @@
 // Independently implemented canvas editor. Photos never leave this browser.
 const $ = id => document.getElementById(id);
 const canvas = $('preview'), ctx = canvas.getContext('2d');
-const state = {mode:'music',image:null,palette:['#dce1e6','#bdc6d0','#8997a5','#586978','#2c3b48'],start:0,raf:0,picking:false,busy:false,gif:null,url:null,loadToken:0,cardSide:'front'};
+const state = {mode:'music',image:null,palette:['#dce1e6','#bdc6d0','#8997a5','#586978','#2c3b48'],start:0,raf:0,picking:false,busy:false,gif:null,url:null,loadToken:0};
 const DURATION = 3600, SHUTTER = 2460;
 const MEMBERS = {원이:{birth:'2004.05.25'},리브:{birth:'2006.10.11'},미나미:{birth:'2006.11.29'},메이:{birth:'2008.08.19'},제나:{birth:'2008.11.27'}};
 let photoRect = null;
@@ -12,9 +12,10 @@ const chromaBuffer = document.createElement('canvas');
 const number = id => Number($(id).value);
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
-function dimensions(){return state.mode==='music'?$('size').value.split(',').map(Number):state.mode==='ticket'?$('ticketSize').value.split(',').map(Number):state.mode==='card'?$('cardSize').value.split(',').map(Number):$('orientation').value==='portrait'?[1080,1920]:[1920,1080];}
-function cardMemberName(){const m=$('cardMember').value;return m==='custom'?($('cardName').value.trim()||'MEMBER'):m;}
-function cardBirth(){return MEMBERS[$('cardMember').value]?.birth||'';}
+function dimensions(){return state.mode==='music'?$('size').value.split(',').map(Number):state.mode==='ticket'?$('ticketSize').value.split(',').map(Number):state.mode==='birthday'?$('bdSize').value.split(',').map(Number):$('orientation').value==='portrait'?[1080,1920]:[1920,1080];}
+function bdMemberName(){const m=$('bdMember').value;return m==='custom'?($('bdName').value.trim()||'MEMBER'):m;}
+function bdMonthDay(){const m=$('bdMember').value;if(m!=='custom'){const[y,mo,d]=MEMBERS[m].birth.split('.').map(Number);return{mo,d,y};}const mt=$('bdDate').value.trim().match(/^(\d{1,2})[.\-/](\d{1,2})$/);return mt?{mo:clamp(Number(mt[1]),1,12),d:clamp(Number(mt[2]),1,31),y:null}:{mo:1,d:1,y:null};}
+function nextBirthday(mo,d){const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());let target=new Date(now.getFullYear(),mo-1,d);if(target<today)target=new Date(now.getFullYear()+1,mo-1,d);return{days:Math.round((target-today)/86400000),year:target.getFullYear()};}
 function hex(r,g,b){return '#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('');}
 function contrast(color){const rgb=color.match(/[a-f\d]{2}/gi).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>.179?'#202326':'#fafbfc';}
 function rect(c,x,y,w,h,r=0){c.beginPath();c.roundRect(x,y,w,h,r);c.fill();}
@@ -71,41 +72,23 @@ function ticket(c,w,h){
  text(c,'NO. '+serial,m,y,w*.019,ink,500);text(c,'SCENE',w-m,y,w*.02,ink,600,'right');
  return pr;
 }
-function holoFX(c,x,y,w,h,r){
- c.save();c.beginPath();c.roundRect(x,y,w,h,r);c.clip();
- const grad=c.createLinearGradient(x,y,x+w*.35,y+h);
- grad.addColorStop(0,'#ff8bd1');grad.addColorStop(.25,'#9bb8ff');grad.addColorStop(.5,'#8bffc7');grad.addColorStop(.75,'#fff08b');grad.addColorStop(1,'#ff8bd1');
- c.globalCompositeOperation='color-dodge';c.globalAlpha=.2;c.fillStyle=grad;c.fillRect(x,y,w,h);
- c.globalCompositeOperation='overlay';c.globalAlpha=.5;const rnd=mulberry32(hashNum(cardMemberName()));
- for(let i=0;i<50;i++){c.fillStyle=rnd()<.5?'#ffffff':'#eef1ff';c.beginPath();c.arc(x+rnd()*w,y+rnd()*h,rnd()*1.6+.4,0,Math.PI*2);c.fill();}
- c.restore();
-}
-function cardFront(c,w,h){
- const bg=$('cardBg').value,ink=contrast(bg),r=w*.055,frame=w*.028,textH=w*.16;
- c.fillStyle=bg;rect(c,0,0,w,h,r);
- const pr=photo(c,frame,frame,w-frame*2,h-frame*2-textH,{radius:r*.7});
- text(c,cardMemberName().toUpperCase(),frame+w*.02,h-frame-w*.045,w*.062,ink,700,'left',w-frame*2-w*.16);
- text(c,'RESCENE',frame+w*.02,h-frame-w*.016,w*.024,ink,500);
- text(c,'#'+String(hashNum(cardMemberName()+$('cardCaption').value)%900+100),w-frame-w*.02,h-frame-w*.02,w*.02,ink,500,'right');
- const cap=$('cardCaption').value.trim();if(cap)text(c,cap,w-frame-w*.02,h-frame-w*.045,w*.022,ink,500,'right',w*.4);
- c.save();c.strokeStyle=ink;c.globalAlpha=.45;c.lineWidth=w*.006;c.beginPath();c.roundRect(w*.006,w*.006,w-w*.012,h-w*.012,r);c.stroke();c.restore();
- if($('cardHolo').checked)holoFX(c,frame,frame,w-frame*2,h-frame*2-textH,r*.7);
+function birthday(c,w,h){
+ const bg=$('bdBg').value,ink=contrast(bg),m=w*.09,inner=w-2*m;
+ c.fillStyle=bg;c.fillRect(0,0,w,h);
+ const photoH=h*.56,pr=photo(c,0,0,w,photoH,{radius:0});
+ c.fillStyle=bg;rect(c,0,photoH,w,h-photoH,0);
+ const info=bdMonthDay(),nb=nextBirthday(info.mo,info.d);
+ let y=photoH+w*.14;
+ text(c,nb.days===0?'D-DAY':'D-'+nb.days,m,y,w*.13,ink,700);
+ y+=w*.075;
+ text(c,bdMemberName().toUpperCase()+"'S BIRTHDAY",m,y,w*.03,ink,600,'left',inner);
+ y+=w*.052;
+ text(c,String(info.mo)+'월 '+String(info.d)+'일',m,y,w*.022,ink,400);
+ y+=w*.065;c.strokeStyle=ink;c.globalAlpha=.16;line(c,m,y,w-m,y,w*.003);c.globalAlpha=1;
+ y+=w*.045;
+ const cap=$('bdCaption').value.trim();if(cap)text(c,cap,m,y,w*.02,ink,400,'left',inner);
+ text(c,'RESCENE',w-m,h-w*.045,w*.02,ink,600,'right');text(c,'SCENE',m,h-w*.045,w*.02,ink,500);
  return pr;
-}
-function cardBack(c,w,h){
- const bg=$('cardBg').value,ink=contrast(bg),r=w*.055,frame=w*.028,rnd=mulberry32(hashNum(cardMemberName()+'back'));
- c.fillStyle=bg;rect(c,0,0,w,h,r);
- c.save();c.globalAlpha=.05;c.fillStyle=ink;for(let y=frame;y<h-frame;y+=w*.05)for(let x=frame;x<w-frame;x+=w*.05){c.save();c.translate(x,y);c.rotate(Math.PI/4);c.fillRect(-w*.006,-w*.006,w*.012,w*.012);c.restore();}c.restore();
- text(c,'RESCENE',w/2,h*.17,w*.05,ink,700,'center');
- text(c,'MADE FOR '+cardMemberName().toUpperCase(),w/2,h*.205,w*.02,ink,500,'center');
- let y=h*.44;const rowGap=w*.078;
- text(c,'NAME',frame,y,w*.024,ink,500);text(c,cardMemberName(),w-frame,y,w*.034,ink,600,'right');y+=rowGap;
- const birth=cardBirth();if(birth){text(c,'BIRTHDAY',frame,y,w*.024,ink,500);text(c,birth,w-frame,y,w*.034,ink,600,'right');y+=rowGap;}
- const blood=$('cardBlood').value;if(blood){text(c,'BLOOD TYPE',frame,y,w*.024,ink,500);text(c,blood,w-frame,y,w*.034,ink,600,'right');y+=rowGap;}
- barcode(c,frame,h-frame-w*.11,w-frame*2,w*.045,hashNum(cardMemberName()+cardBirth()),ink);
- text(c,'SCENE STUDIO',w/2,h-frame-w*.02,w*.018,ink,500,'center');
- c.save();c.strokeStyle=ink;c.globalAlpha=.45;c.lineWidth=w*.006;c.beginPath();c.roundRect(w*.006,w*.006,w-w*.012,h-w*.012,r);c.stroke();c.restore();
- if($('cardHolo').checked)holoFX(c,0,0,w,h,r);
 }
 function ghost(w,h,sx,sy,sw,sh,color){chromaBuffer.width=w;chromaBuffer.height=h;const g=chromaBuffer.getContext('2d');g.clearRect(0,0,w,h);g.drawImage(state.image,sx,sy,sw,sh,0,0,w,h);g.globalCompositeOperation='multiply';g.fillStyle=color;g.fillRect(0,0,w,h);return chromaBuffer;}
 function vhsFX(c,w,h,t,base,area,pr){
@@ -125,21 +108,34 @@ function parallaxBG(c,w,h,t){
  c.restore();
  c.fillStyle='rgba(8,10,14,.4)';c.fillRect(0,0,w,h);
 }
-function focus(c,w,h,time){const t=clamp(time,0,DURATION),kind=$('camera').value,isVHS=kind==='vhs',isParallax=kind==='parallax',base=Math.min(w,h),m=base*.055;const seek=clamp((t-650)/1300,0,1),e=seek*seek*(3-2*seek),locked=t>=1950;const blur=(1-e)*base*.012,shake=t<1950?Math.sin(t/91)*base*.002*(1-e):0;const accent=kind==='pro'?'#73dbab':isVHS?'#ff2d55':isParallax?'#c9a6ff':kind==='grid'?'#91c7ff':'#ffffff';const zProg=clamp(t/DURATION,0,1),zEase=zProg*zProg*(3-2*zProg);
+function lightstickFX(c,w,h,t,base,area){
+ c.save();c.beginPath();c.roundRect(area.x,area.y,area.w,area.h,0);c.clip();c.globalCompositeOperation='screen';
+ const colors=['#ff8bd1','#9bb8ff','#8bffc7','#fff08b','#c9a6ff','#ff9e7a','#ffffff'];
+ for(let i=0;i<7;i++){
+  const rnd=mulberry32(i*97+1),bx=area.x+rnd()*area.w,by0=area.y+area.h*(.55+rnd()*.5);
+  const y=by0-((t+i*320)%2600)/2600*area.h*.4,x=bx+Math.sin((t+i*400)/700)*base*.035;
+  const r=base*(.055+rnd()*.05),alpha=.45+.3*Math.sin((t+i*220)/500),col=colors[i%colors.length];
+  const grad=c.createRadialGradient(x,y,0,x,y,r);grad.addColorStop(0,col+'cc');grad.addColorStop(1,col+'00');
+  c.globalAlpha=alpha;c.fillStyle=grad;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+ }
+ c.restore();
+}
+function focus(c,w,h,time){const t=clamp(time,0,DURATION),kind=$('camera').value,isVHS=kind==='vhs',isParallax=kind==='parallax',isLightstick=kind==='lightstick',base=Math.min(w,h),m=base*.055;const seek=clamp((t-650)/1300,0,1),e=seek*seek*(3-2*seek),locked=t>=1950;const blur=(1-e)*base*.012,shake=t<1950?Math.sin(t/91)*base*.002*(1-e):0;const accent=kind==='pro'?'#73dbab':isVHS?'#ff2d55':isParallax?'#c9a6ff':kind==='grid'?'#91c7ff':isLightstick?'#ff8bd1':'#ffffff';const zProg=clamp(t/DURATION,0,1),zEase=zProg*zProg*(3-2*zProg);
  if(isParallax)parallaxBG(c,w,h,t);else{c.fillStyle=isVHS?'#070707':'#151719';c.fillRect(0,0,w,h);}const top=base*.115,bottom=base*.19,area={x:m,y:top,w:w-2*m,h:h-top-bottom};const jx=isVHS?Math.sin(t/45)*base*.0015+(t%171<8?base*.012:0):0;const pr=photo(c,area.x+jx,area.y,area.w,area.h,{blur,shake,radius:kind==='clean'?base*.025:0,extraZoom:isParallax?1+zEase*.08:1});
  if(kind==='grid'){c.save();c.strokeStyle='#ffffff45';for(let i=1;i<3;i++){line(c,area.x+area.w*i/3,area.y,area.x+area.w*i/3,area.y+area.h,1);line(c,area.x,area.y+area.h*i/3,area.x+area.w,area.y+area.h*i/3,1);}c.restore();}
  if(isVHS){const blink=Math.sin(t/140)>0;if(blink){c.fillStyle=accent;c.beginPath();c.arc(m+base*.012,base*.062,base*.011,0,Math.PI*2);c.fill();}text(c,'REC',m+base*.03,base*.068,base*.022,'#eef1f4',600);const secs=t/1000,tc=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(Math.floor(secs%60)).padStart(2,'0')}:${String(Math.floor((secs*30)%30)).padStart(2,'0')}`;text(c,tc,w-m,base*.068,base*.02,'#f5c94d',500,'right');}
  else if(isParallax){text(c,'PARALLAX / ZOOM',m,base*.068,base*.022,'#eef1f4',500);text(c,Math.round((1+zEase*.08)*100)+'%',w-m,base*.068,base*.02,accent,500,'right');}
- else{text(c,kind==='pro'?'MANUAL / 50 MM':kind==='grid'?'FRAME / 3 × 3':'FOCUS / AUTO',m,base*.068,base*.022,'#eef1f4',500);text(c,locked?'FOCUS LOCKED':'FINDING FOCUS',w-m,base*.068,base*.018,locked?accent:'#a8afb7',400,'right');}
- if(!isVHS&&!isParallax){const cx=w/2+shake,cy=area.y+area.h*.46,s=base*(.19-.05*e);c.strokeStyle=accent;c.globalAlpha=locked?1:.65+.3*Math.sin(t/100);c.lineWidth=base*.003;for(const [dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1]]){c.beginPath();c.moveTo(cx+dx*s/2,cy+dy*(s/2-s*.2));c.lineTo(cx+dx*s/2,cy+dy*s/2);c.lineTo(cx+dx*(s/2-s*.2),cy+dy*s/2);c.stroke();}c.globalAlpha=1;}
+ else{text(c,kind==='pro'?'MANUAL / 50 MM':kind==='grid'?'FRAME / 3 × 3':isLightstick?'BOKEH / LIVE':'FOCUS / AUTO',m,base*.068,base*.022,'#eef1f4',500);text(c,locked?'FOCUS LOCKED':'FINDING FOCUS',w-m,base*.068,base*.018,locked?accent:'#a8afb7',400,'right');}
+ if(!isVHS&&!isParallax&&!isLightstick){const cx=w/2+shake,cy=area.y+area.h*.46,s=base*(.19-.05*e);c.strokeStyle=accent;c.globalAlpha=locked?1:.65+.3*Math.sin(t/100);c.lineWidth=base*.003;for(const [dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1]]){c.beginPath();c.moveTo(cx+dx*s/2,cy+dy*(s/2-s*.2));c.lineTo(cx+dx*s/2,cy+dy*s/2);c.lineTo(cx+dx*(s/2-s*.2),cy+dy*s/2);c.stroke();}c.globalAlpha=1;}
  if(kind==='pro'){text(c,'1/125   F2.8   ISO 200',m+base*.03,area.y+area.h-base*.035,base*.022,'#ffffff',500);}
  if(isVHS){text(c,'SP · STEREO',m+base*.03,area.y+area.h-base*.035,base*.02,'#e9edef',500);}
  const cap=$('caption').value.trim();if(cap){c.save();c.shadowColor='#000';c.shadowBlur=base*.01;wrapped(c,cap,w/2,area.y+area.h-base*(kind==='pro'||isVHS?.1:.06),base*.04,area.w*.87,$('captionColor').value,$('italic').checked);c.restore();}
  if(isVHS)vhsFX(c,w,h,t,base,area,pr);
+ if(isLightstick)lightstickFX(c,w,h,t,base,area);
  const y=h-base*.085;const press=t>SHUTTER-60&&t<SHUTTER+100?.9:1;c.strokeStyle='#e9edef';c.lineWidth=base*.002;c.beginPath();c.arc(w/2,y,base*.037*press,0,Math.PI*2);c.stroke();c.fillStyle='#e9edef';c.beginPath();c.arc(w/2,y,base*.029*press,0,Math.PI*2);c.fill();text(c,'SCENE',m,y+base*.006,base*.022,'#aeb6bf',500);text(c,t>SHUTTER?(isVHS?'SAVED':'CAPTURED'):(isVHS?'RECORDING':'PHOTO'),w-m,y+base*.006,base*.019,t>SHUTTER?accent:'#aeb6bf',500,'right');
  if(t>=SHUTTER&&t<SHUTTER+130){c.fillStyle=`rgba(255,255,255,${(1-(t-SHUTTER)/130)*.92})`;c.fillRect(0,0,w,h);}if(kind==='pro'&&t>=SHUTTER&&t<SHUTTER+200){const a=1-(t-SHUTTER)/200;c.fillStyle='#111';c.fillRect(area.x,area.y,area.w,area.h*.5*a);c.fillRect(area.x,area.y+area.h-area.h*.5*a,area.w,area.h*.5*a);}
 }
-function draw(c,w,h,time=3200){if(state.mode==='music')return music(c,w,h);if(state.mode==='ticket')return ticket(c,w,h);if(state.mode==='card')return state.cardSide==='back'?cardBack(c,w,h):cardFront(c,w,h);focus(c,w,h,time);}
+function draw(c,w,h,time=3200){if(state.mode==='music')return music(c,w,h);if(state.mode==='ticket')return ticket(c,w,h);if(state.mode==='birthday')return birthday(c,w,h);focus(c,w,h,time);}
 function render(time=3200){if(!state.image)return;const[w,h]=dimensions(),scale=Math.min(1,900/Math.max(w,h));const pw=Math.round(w*scale),ph=Math.round(h*scale);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}ctx.setTransform(scale,0,0,scale,0,0);photoRect=draw(ctx,w,h,time);ctx.setTransform(1,0,0,1,0,0);}
 function previewUI(){
  $('playPause').textContent=previewPlaying?'Ⅱ 일시정지':'▶ 재생';
@@ -177,7 +173,7 @@ function refresh(restart=false){
  }else render();
 }
 function updateButtons(){for(const id of ['png','gif','replay','playPause','timeline','eyedropper','clear'])$(id).disabled=!state.image||state.busy;$('photo').disabled=state.busy;$('choose').disabled=state.busy;}
-function setMode(mode){if(state.busy)return;state.mode=mode;stop();setPicking(false);document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===mode)));$('musicPanel').hidden=mode!=='music';$('focusPanel').hidden=mode!=='focus';$('ticketPanel').hidden=mode!=='ticket';$('cardPanel').hidden=mode!=='card';$('gif').hidden=mode!=='focus';$('replay').hidden=mode!=='focus';$('motionControls').hidden=mode!=='focus';$('modeNote').textContent=mode==='music'?'사진과 음악을 한 장에':mode==='ticket'?'나만의 공연 티켓 만들기':mode==='card'?'나만의 포토카드 만들기':'효과 미리보기 · 3.6초';refresh(true);}
+function setMode(mode){if(state.busy)return;state.mode=mode;stop();setPicking(false);document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===mode)));$('musicPanel').hidden=mode!=='music';$('focusPanel').hidden=mode!=='focus';$('ticketPanel').hidden=mode!=='ticket';$('birthdayPanel').hidden=mode!=='birthday';$('gif').hidden=mode!=='focus';$('replay').hidden=mode!=='focus';$('motionControls').hidden=mode!=='focus';$('modeNote').textContent=mode==='music'?'사진과 음악을 한 장에':mode==='ticket'?'나만의 공연 티켓 만들기':mode==='birthday'?'멤버 생일까지 D-day 세기':'효과 미리보기 · 3.6초';refresh(true);}
 function paletteUI(){const root=$('palette');root.replaceChildren();state.palette.forEach(color=>{const b=document.createElement('button');b.className='swatch';b.style.backgroundColor=color;b.title=color.toUpperCase();b.setAttribute('aria-label',color+' 배경색으로 사용');b.onclick=()=>{if(state.busy)return;$('background').value=color;render();};root.append(b);});}
 function extractPalette(px=null,py=null){const im=state.image,c=document.createElement('canvas');c.width=c.height=80;const g=c.getContext('2d',{willReadFrequently:true});if(px===null)g.drawImage(im,0,0,80,80);else{const side=Math.min(im.width,im.height)*.32;g.drawImage(im,clamp(px-side/2,0,im.width-side),clamp(py-side/2,0,im.height-side),side,side,0,0,80,80);}const data=g.getImageData(0,0,80,80).data;const bins=new Map();for(let i=0;i<data.length;i+=4){if(data[i+3]<128)continue;const rgb=[data[i],data[i+1],data[i+2]],key=rgb.map(v=>Math.floor(v/32)).join(',');let bin=bins.get(key);if(!bin){bin={n:0,sum:[0,0,0]};bins.set(key,bin);}bin.n++;rgb.forEach((v,j)=>bin.sum[j]+=v);}const chosen=[];for(const b of [...bins.values()].sort((a,b)=>b.n-a.n)){const col=b.sum.map(v=>v/b.n);if(chosen.every(old=>Math.hypot(...col.map((v,i)=>v-old[i]))>48))chosen.push(col);if(chosen.length===5)break;}if(!chosen.length)chosen.push([220,220,220]);while(chosen.length<5){const col=chosen[0],k=chosen.length;chosen.push(col.map(v=>clamp(v+(k%2?1:-1)*k*22,0,255)));}chosen.sort((a,b)=>b.reduce((x,v)=>x+v,0)-a.reduce((x,v)=>x+v,0));state.palette=chosen.map(col=>hex(...col));paletteUI();$('pickHint').textContent='색상을 누르면 배경에 적용됩니다.';}
 async function loadPhoto(file){if(!file||state.busy)return;if(!file.type.startsWith('image/')){status('이미지 파일을 선택해 주세요.',true);return;}if(file.size>25*1024*1024){status('25 MB 이하의 이미지를 선택해 주세요.',true);return;}const token=++state.loadToken;const url=URL.createObjectURL(file);status('사진을 불러오는 중…');try{const im=new Image();im.src=url;await im.decode();if(token!==state.loadToken)return;const limit=4096,scale=Math.min(1,limit/Math.max(im.naturalWidth,im.naturalHeight));const reduced=document.createElement('canvas');reduced.width=Math.max(1,Math.round(im.naturalWidth*scale));reduced.height=Math.max(1,Math.round(im.naturalHeight*scale));reduced.getContext('2d').drawImage(im,0,0,reduced.width,reduced.height);state.image=reduced;$('zoom').value='1';$('panX').value=$('panY').value='0';extractPalette();$('empty').hidden=true;canvas.hidden=false;$('fileLabel').textContent=file.name||'붙여넣은 사진';updateButtons();refresh(true);status('준비되었습니다. 원하는 모습으로 편집해 보세요.');}catch{status('이 이미지를 열 수 없습니다. JPG 또는 PNG로 변환해 주세요.',true);}finally{URL.revokeObjectURL(url);$('photo').value='';}}
@@ -195,10 +191,9 @@ function exportGIF(){if(!state.image||state.busy)return;if(typeof GIF==='undefin
 }
 $('photo').onchange=e=>loadPhoto(e.target.files[0]);$('choose').onclick=()=>$('photo').click();for(const event of ['dragenter','dragover'])$('drop').addEventListener(event,e=>{e.preventDefault();$('drop').classList.add('dragover');});for(const event of ['dragleave','drop'])$('drop').addEventListener(event,e=>{e.preventDefault();$('drop').classList.remove('dragover');if(event==='drop')loadPhoto(e.dataTransfer.files[0]);});document.addEventListener('paste',e=>{const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(item){e.preventDefault();loadPhoto(item.getAsFile());}});
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const modes=[...document.querySelectorAll('[data-mode]')].map(b=>b.dataset.mode),i=modes.indexOf(state.mode);const mode=e.key==='Home'?modes[0]:e.key==='End'?modes[modes.length-1]:e.key==='ArrowRight'?modes[(i+1)%modes.length]:modes[(i-1+modes.length)%modes.length];setMode(mode);$(mode+'Tab').focus();});
-for(const id of ['title','artist','elapsed','duration','background','showPalette','size','zoom','panX','panY','caption','captionColor','italic','camera','orientation','loop','ticketTitle','ticketArtist','ticketDate','ticketVenue','ticketZone','ticketRow','ticketSeat','ticketGate','ticketBg','ticketSize','cardMember','cardName','cardCaption','cardBlood','cardBg','cardHolo','cardSize'])$(id).addEventListener('input',()=>refresh(['camera','orientation','loop'].includes(id)));
-$('white').onclick=()=>{$('background').value='#ffffff';render();};$('ticketWhite').onclick=()=>{$('ticketBg').value='#ffffff';render();};$('cardWhite').onclick=()=>{$('cardBg').value='#ffffff';render();};$('eyedropper').onclick=()=>setPicking(!state.picking);$('replay').onclick=()=>replay(true);$('png').onclick=exportPNG;$('gif').onclick=exportGIF;$('cancel').onclick=()=>state.cancel?.();
-$('cardMember').addEventListener('change',()=>{$('cardNameWrap').hidden=$('cardMember').value!=='custom';});
-$('cardFlip').onclick=()=>{if(state.busy)return;state.cardSide=state.cardSide==='back'?'front':'back';$('cardFlip').textContent=state.cardSide==='back'?'앞면 보기':'뒷면 보기';render();};
+for(const id of ['title','artist','elapsed','duration','background','showPalette','size','zoom','panX','panY','caption','captionColor','italic','camera','orientation','loop','ticketTitle','ticketArtist','ticketDate','ticketVenue','ticketZone','ticketRow','ticketSeat','ticketGate','ticketBg','ticketSize','bdMember','bdName','bdDate','bdCaption','bdBg','bdSize'])$(id).addEventListener('input',()=>refresh(['camera','orientation','loop'].includes(id)));
+$('white').onclick=()=>{$('background').value='#ffffff';render();};$('ticketWhite').onclick=()=>{$('ticketBg').value='#ffffff';render();};$('bdWhite').onclick=()=>{$('bdBg').value='#ffffff';render();};$('eyedropper').onclick=()=>setPicking(!state.picking);$('replay').onclick=()=>replay(true);$('png').onclick=exportPNG;$('gif').onclick=exportGIF;$('cancel').onclick=()=>state.cancel?.();
+$('bdMember').addEventListener('change',()=>{$('bdCustomWrap').hidden=$('bdMember').value!=='custom';});
 $('clear').onclick=()=>{if(state.busy)return;state.loadToken++;stop();previewTime=0;previewUI();state.image=null;setPicking(false);canvas.hidden=true;$('empty').hidden=false;$('fileLabel').textContent='사진 선택';$('download').hidden=true;if(state.url){URL.revokeObjectURL(state.url);state.url=null;}updateButtons();status('사진을 선택하면 저장할 수 있습니다.');};
 $('share').onclick=async()=>{const url=location.href.split('#')[0];try{if(navigator.share){await navigator.share({title:'SCENE Studio',text:'사진으로 만드는 포스터와 모션',url});}else{await navigator.clipboard.writeText(url);status('페이지 주소를 복사했습니다.');}}catch(e){if(e.name!=='AbortError')status('주소를 복사하지 못했습니다. 브라우저 주소창에서 복사해 주세요.',true);}};
 let resumeVisible=false;
