@@ -27,13 +27,16 @@ function triangle(c,x,y,size){c.beginPath();c.moveTo(x-size*.32,y-size*.5);c.lin
 function music(c,w,h){const bg=$('background').value,ink=contrast(bg),m=w*.1,inner=w-2*m;c.fillStyle=bg;c.fillRect(0,0,w,h);const top=h*.13,photoSize=inner;
  text(c,'ON REPEAT',m,top-w*.045,w*.022,ink,500);text(c,'01 /',w-m,top-w*.045,w*.022,ink,500,'right');
  const pr=photo(c,m,top,photoSize,photoSize,{radius:w*.004});
- let y=top+photoSize+w*.075;
- if($('showPalette').checked){const gap=w*.012,cell=(inner-gap*4)/5;state.palette.forEach((col,i)=>{c.fillStyle=col;rect(c,m+i*(cell+gap),y,cell,w*.058,0);text(c,col.toUpperCase(),m+i*(cell+gap),y+w*.09,w*.015,ink,400);});y+=w*.18;}else y+=w*.055;
- text(c,$('title').value.trim()||'Untitled track',m,y,w*.051,ink,600,'left',inner);y+=w*.056;text(c,$('artist').value.trim()||'Unknown artist',m,y,w*.027,ink,400,'left',inner);
- y+=w*.095;c.strokeStyle=ink;c.globalAlpha=.16;line(c,m,y,w-m,y,w*.003);c.globalAlpha=1;
+ const photoBottom=top+photoSize,palette=$('showPalette').checked;
+ const span=w*.075+(palette?w*.18:w*.055)+w*.056+w*.095+w*.12,footerGap=w*(palette?.13:.255);
+ const scale=clamp((h-w*.09-photoBottom-footerGap)/span,1,2.2);
+ let y=photoBottom+w*.075*scale;
+ if(palette){const g=w*.012,cell=(inner-g*4)/5;state.palette.forEach((col,i)=>{c.fillStyle=col;rect(c,m+i*(cell+g),y,cell,w*.058,0);text(c,col.toUpperCase(),m+i*(cell+g),y+w*.09,w*.015,ink,400);});y+=w*.18*scale;}else y+=w*.055*scale;
+ text(c,$('title').value.trim()||'Untitled track',m,y,w*.051,ink,600,'left',inner);y+=w*.056*scale;text(c,$('artist').value.trim()||'Unknown artist',m,y,w*.027,ink,400,'left',inner);
+ y+=w*.095*scale;c.strokeStyle=ink;c.globalAlpha=.16;line(c,m,y,w-m,y,w*.003);c.globalAlpha=1;
  const time=s=>{const a=s.split(':').map(Number);return a.length===2&&a.every(Number.isFinite)?a[0]*60+a[1]:0;};const ratio=clamp(time($('elapsed').value)/Math.max(1,time($('duration').value)),0,1);
  line(c,m,y,m+inner*ratio,y,w*.003);c.fillStyle=ink;c.beginPath();c.arc(m+inner*ratio,y,w*.006,0,Math.PI*2);c.fill();text(c,$('elapsed').value,m,y+w*.035,w*.019,ink);text(c,$('duration').value,w-m,y+w*.035,w*.019,ink,400,'right');
- y+=w*.12;c.fillStyle=ink;triangle(c,w*.5,y,w*.045);triangle(c,w*.67,y,w*.024);line(c,w*.69,y-w*.013,w*.69,y+w*.013,w*.004);c.save();c.translate(w*.33,y);c.rotate(Math.PI);triangle(c,0,0,w*.024);line(c,w*.021,-w*.013,w*.021,w*.013,w*.004);c.restore();
+ y+=w*.12*scale;c.fillStyle=ink;triangle(c,w*.5,y,w*.045);triangle(c,w*.67,y,w*.024);line(c,w*.69,y-w*.013,w*.69,y+w*.013,w*.004);c.save();c.translate(w*.33,y);c.rotate(Math.PI);triangle(c,0,0,w*.024);line(c,w*.021,-w*.013,w*.021,w*.013,w*.004);c.restore();
  c.strokeStyle=ink;c.lineWidth=w*.002;c.beginPath();c.arc(w*.13,y,w*.011,0,Math.PI*2);c.stroke();line(c,w*.862,y-w*.011,w*.862,y+w*.011,w*.002);line(c,w*.851,y,w*.873,y,w*.002);
  text(c,'PHOTO / SOUND / MOMENT',m,h-w*.09,w*.016,ink,400);text(c,'SCENE',w-m,h-w*.09,w*.019,ink,600,'right');return pr;
 }
