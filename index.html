@@ -26,7 +26,6 @@
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
     <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
-    <button id="holoTab" role="tab" aria-selected="false" aria-controls="holoPanel" data-mode="holo">홀로그램 포카</button>
     <button id="lifecutTab" role="tab" aria-selected="false" aria-controls="lifecutPanel" data-mode="lifecut">인생네컷</button>
     <button id="receiptTab" role="tab" aria-selected="false" aria-controls="receiptPanel" data-mode="receipt">감성 영수증</button>
   </div>
@@ -170,23 +169,6 @@
     </section>
   </div>
 
-  <div id="holoPanel" role="tabpanel" aria-labelledby="holoTab" hidden>
-    <section>
-      <h2><i>2</i>카드 정보</h2>
-      <label>이름<input id="holoName" type="text" maxlength="20" placeholder="RESCENE"></label>
-      <label>카드 번호<input id="holoNumber" type="text" maxlength="10" placeholder="01/25"></label>
-    </section>
-    <section>
-      <h2><i>3</i>프레임 & 홀로그램</h2>
-      <div class="color-line">
-        <label for="holoFrame">프레임 색상</label>
-        <input id="holoFrame" type="color" value="#ffffff">
-        <button id="holoWhite" class="text-button">흰색</button>
-      </div>
-      <label>홀로그램 강도<input id="holoIntensity" type="range" min="0.2" max="1" step="0.05" value="0.7"></label>
-    </section>
-  </div>
-
   <div id="lifecutPanel" role="tabpanel" aria-labelledby="lifecutTab" hidden>
     <section>
       <div class="section-title">
@@ -220,11 +202,26 @@
     <section>
       <h2><i>2</i>영수증 정보</h2>
       <label>상단 제목<input id="receiptTitle" type="text" maxlength="30" placeholder="SCENE RECEIPT"></label>
-      <label>한마디<input id="receiptCaption" type="text" maxlength="60" placeholder="오늘의 최애 순간"></label>
       <label>날짜<input id="receiptDate" type="text" maxlength="20" placeholder="2026.09.23"></label>
     </section>
     <section>
-      <h2><i>3</i>스타일</h2>
+      <h2><i>3</i>품목</h2>
+      <div class="pair">
+        <label>항목 1<input id="receiptItem1" type="text" maxlength="16" placeholder="오늘의 기분"></label>
+        <label>내용<input id="receiptItem1Val" type="text" maxlength="16" placeholder="최고"></label>
+      </div>
+      <div class="pair">
+        <label>항목 2<input id="receiptItem2" type="text" maxlength="16" placeholder="함께한 사람"></label>
+        <label>내용<input id="receiptItem2Val" type="text" maxlength="16" placeholder="RESCENE"></label>
+      </div>
+      <div class="pair">
+        <label>항목 3<input id="receiptItem3" type="text" maxlength="16" placeholder="오늘 날씨"></label>
+        <label>내용<input id="receiptItem3Val" type="text" maxlength="16" placeholder="맑음"></label>
+      </div>
+    </section>
+    <section>
+      <h2><i>4</i>한마디 & 스타일</h2>
+      <label>총평 한마디<input id="receiptCaption" type="text" maxlength="40" placeholder="오늘의 최애 순간"></label>
       <label class="check"><input id="receiptMono" type="checkbox" checked> 흑백 · 망점 효과</label>
     </section>
   </div>
