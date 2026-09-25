@@ -171,7 +171,7 @@ progress{width:100%;accent-color:var(--ink);height:4px}
   header{padding:0 20px;height:48px}
   .private{display:none}
   main{grid-template-columns:290px minmax(0,1fr)}
-  .tabs button{white-space:normal;flex:initial}
+  .tabs button{white-space:normal;flex:initial;word-break:keep-all}
   .editor{padding:24px 20px}
   .workspace{padding:22px 20px}
   .export-bar p{max-width:100%;width:100%}
