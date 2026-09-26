@@ -2,6 +2,7 @@
 // Independently implemented canvas editor. Photos never leave this browser.
 const $ = id => document.getElementById(id);
 const canvas = $('preview'), ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 const state = {mode:'music',image:null,palette:['#dce1e6','#bdc6d0','#8997a5','#586978','#2c3b48'],start:0,raf:0,picking:false,busy:false,gif:null,url:null,loadToken:0,lifecutImages:[null,null,null,null],lifecutTokens:[0,0,0,0]};
 const DURATION = 3600, SHUTTER = 2460;
 let photoRect = null;
@@ -263,12 +264,26 @@ async function loadLifecutSlot(index,file){if(!file||state.busy)return;if(!file.
 function setPicking(on){state.picking=on;$('eyedropper').setAttribute('aria-pressed',String(on));$('eyedropper').textContent=on?'스포이트 끄기':'스포이트';$('previewArea').classList.toggle('picking',on);if(on)status('미리보기의 사진을 누르면 주변 색상을 추출합니다.');}
 canvas.addEventListener('click',e=>{if(!state.picking||state.busy||!photoRect)return;const r=canvas.getBoundingClientRect(),[w,h]=dimensions(),x=(e.clientX-r.left)/r.width*w,y=(e.clientY-r.top)/r.height*h,p=photoRect;if(x<p.x||x>p.x+p.w||y<p.y||y>p.y+p.h)return;extractPalette(p.sx+(x-p.x)/p.w*p.sw,p.sy+(y-p.y)/p.h*p.sh);render();status('선택한 부분의 색상을 추출했습니다.');});
 function deliver(blob,filename){if(state.url)URL.revokeObjectURL(state.url);state.url=URL.createObjectURL(blob);const a=$('download');a.href=state.url;a.download=filename;a.hidden=false;a.click();}
-async function exportPNG(){if(!hasPhoto()||state.busy)return;setBusy(true);status('PNG 생성 중…');try{const[w,h]=dimensions(),off=document.createElement('canvas');off.width=w;off.height=h;draw(off.getContext('2d'),w,h);const blob=await new Promise(r=>off.toBlob(r,'image/png'));if(!blob)throw Error('PNG 생성 실패');deliver(blob,`scene-${state.mode}-${w}x${h}.png`);status('PNG 저장을 시작했습니다.');}catch{status('PNG 저장에 실패했습니다. 다시 시도해 주세요.',true);}finally{setBusy(false);}}
+async function exportPNG(){if(!hasPhoto()||state.busy)return;setBusy(true);status('PNG 생성 중…');try{const[w,h]=dimensions(),off=document.createElement('canvas');off.width=w;off.height=h;const octx=off.getContext('2d');octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';draw(octx,w,h);const blob=await new Promise(r=>off.toBlob(r,'image/png'));if(!blob)throw Error('PNG 생성 실패');deliver(blob,`scene-${state.mode}-${w}x${h}.png`);status('PNG 저장을 시작했습니다.');}catch{status('PNG 저장에 실패했습니다. 다시 시도해 주세요.',true);}finally{setBusy(false);}}
 function setBusy(busy){state.busy=busy;document.querySelectorAll('.editor input,.editor select,.editor textarea,.tabs button,.editor .text-button,.swatch').forEach(el=>el.disabled=busy);updateButtons();if(busy){resumePreview=previewPlaying;stop();}else if(state.mode==='focus'){refresh();if(resumePreview)play();resumePreview=false;}}
-function exportGIF(){if(!state.image||state.busy)return;if(typeof GIF==='undefined'){status('GIF 모듈을 불러오지 못했습니다. vendor 폴더가 함께 배포되었는지 확인해 주세요.',true);return;}setBusy(true);$('cancel').hidden=false;$('progress').hidden=false;$('progress').value=0;status('GIF 프레임을 만드는 중…');const[w,h]=dimensions(),scale=number('quality')/Math.max(w,h),off=document.createElement('canvas');off.width=Math.round(w*scale);off.height=Math.round(h*scale);const g=off.getContext('2d');const gif=new GIF({workers:2,quality:8,width:off.width,height:off.height,workerScript:'./vendor/gif.worker.js',repeat:$('loop').checked?0:-1,background:'#151719'});state.gif=gif;let frame=0,done=false;const total=54;let timer;
+function exportGIF(){if(!state.image||state.busy)return;if(typeof GIF==='undefined'){status('GIF 모듈을 불러오지 못했습니다. vendor 폴더가 함께 배포되었는지 확인해 주세요.',true);return;}setBusy(true);$('cancel').hidden=false;$('progress').hidden=false;$('progress').value=0;status('GIF 프레임을 만드는 중…');
+ const[w,h]=dimensions(),qVal=$('quality').value,longEdge=Math.max(w,h);
+ // 'max' keeps the full design resolution (no downscale); numeric options never upscale past it.
+ const scale=Math.min(1,(qVal==='max'?longEdge:Number(qVal))/longEdge);
+ const off=document.createElement('canvas');off.width=Math.max(2,Math.round(w*scale));off.height=Math.max(2,Math.round(h*scale));
+ const g=off.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+ const outPixels=off.width*off.height;
+ // Larger outputs already take longer to color-quantize, so ease the sampling cost as resolution grows;
+ // smaller outputs can afford the slowest/best NeuQuant sampling without becoming sluggish.
+ const gifQuality=outPixels>1_500_000?10:outPixels>600_000?6:3;
+ const workers=Math.min(4,Math.max(2,navigator.hardwareConcurrency||2));
+ const gif=new GIF({workers,quality:gifQuality,dither:'FloydSteinberg-serpentine',width:off.width,height:off.height,workerScript:'./vendor/gif.worker.js',repeat:$('loop').checked?0:-1,background:'#151719'});
+ state.gif=gif;let frame=0,done=false;const total=54;let timer;
  const finish=()=>{if(done)return;done=true;clearTimeout(timer);for(const worker of [...(gif.activeWorkers||[]),...(gif.freeWorkers||[])])worker.terminate();state.gif=null;$('cancel').hidden=true;$('progress').hidden=true;setBusy(false);};
  gif.on('progress',p=>{$('progress').value=25+p*75;status(`GIF 인코딩 중… ${Math.round(p*100)}%`);});gif.on('finished',blob=>{deliver(blob,`scene-focus-${off.width}x${off.height}.gif`);finish();status('GIF 저장을 시작했습니다.');});gif.on('abort',()=>{finish();status('GIF 생성을 취소했습니다.');});
- timer=setTimeout(()=>{if(done)return;try{gif.abort();}catch{}finish();status('GIF 생성 시간이 초과되었습니다. 더 작은 크기로 다시 시도해 주세요.',true);},180000);
+ // Higher-resolution exports need more time to encode; scale the timeout with output size instead of a flat 3 minutes.
+ const timeoutMs=clamp(120000+outPixels/8,120000,360000);
+ timer=setTimeout(()=>{if(done)return;try{gif.abort();}catch{}finish();status('GIF 생성 시간이 초과되었습니다. 더 작은 크기로 다시 시도해 주세요.',true);},timeoutMs);
  function frameStep(){if(done)return;try{for(let k=0;k<3&&frame<total;k++,frame++){g.setTransform(scale,0,0,scale,0,0);draw(g,w,h,frame*DURATION/total);g.setTransform(1,0,0,1,0,0);gif.addFrame(g,{copy:true,delay:frame%3===0?60:70});}$('progress').value=frame/total*25;if(frame<total)setTimeout(frameStep,0);else gif.render();}catch{finish();status('GIF 생성에 실패했습니다. 작은 크기로 다시 시도해 주세요.',true);}}
  state.cancel=()=>{gif.abort();finish();status('GIF 생성을 취소했습니다.');};frameStep();
 }
