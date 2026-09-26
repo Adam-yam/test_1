@@ -28,9 +28,7 @@
   <div class="tabs" role="tablist" aria-label="작업 종류">
     <button id="musicTab" role="tab" aria-selected="true" aria-controls="musicPanel" data-mode="music">뮤직 포스터</button>
     <button id="focusTab" role="tab" aria-selected="false" aria-controls="focusPanel" data-mode="focus">포커스 모션</button>
-    <button id="ticketTab" role="tab" aria-selected="false" aria-controls="ticketPanel" data-mode="ticket">티켓 스텁</button>
     <button id="lifecutTab" role="tab" aria-selected="false" aria-controls="lifecutPanel" data-mode="lifecut">인생네컷</button>
-    <button id="receiptTab" role="tab" aria-selected="false" aria-controls="receiptPanel" data-mode="receipt">감성 영수증</button>
   </div>
 
   <div id="sharedPhotoSection">
@@ -139,44 +137,6 @@
     </section>
   </div>
 
-  <div id="ticketPanel" role="tabpanel" aria-labelledby="ticketTab" hidden>
-    <section>
-      <h2><i>2</i>공연 정보</h2>
-      <label>공연명<input id="ticketTitle" type="text" maxlength="60" placeholder="RESCENE LIVE"></label>
-      <label>투어/부제<input id="ticketArtist" type="text" maxlength="60" placeholder="World Tour"></label>
-      <div class="pair">
-        <label>날짜<input id="ticketDate" type="text" maxlength="20" placeholder="2026.11.14"></label>
-        <label>장소<input id="ticketVenue" type="text" maxlength="30" placeholder="Seoul, KR"></label>
-      </div>
-    </section>
-    <section>
-      <h2><i>3</i>좌석 정보</h2>
-      <div class="pair">
-        <label>구역<input id="ticketZone" type="text" maxlength="10" placeholder="A"></label>
-        <label>열<input id="ticketRow" type="text" maxlength="10" placeholder="12"></label>
-      </div>
-      <div class="pair">
-        <label>좌석번호<input id="ticketSeat" type="text" maxlength="10" placeholder="07"></label>
-        <label>게이트<input id="ticketGate" type="text" maxlength="10" placeholder="3"></label>
-      </div>
-    </section>
-    <section>
-      <h2><i>4</i>색상 & 출력 크기</h2>
-      <div class="color-line">
-        <label for="ticketBg">티켓 색상</label>
-        <input id="ticketBg" type="color" value="#f4efe3">
-        <button id="ticketWhite" class="text-button">흰색</button>
-      </div>
-      <label class="sr-only" for="ticketSize">출력 크기</label>
-      <select id="ticketSize">
-        <option value="1080,1920">기본 세로 · 1080 × 1920</option>
-        <option value="1320,2868">iPhone · 1320 × 2868</option>
-        <option value="1080,2340">Android FHD+ · 1080 × 2340</option>
-        <option value="1440,3120">Android WQHD+ · 1440 × 3120</option>
-      </select>
-    </section>
-  </div>
-
   <div id="lifecutPanel" role="tabpanel" aria-labelledby="lifecutTab" hidden>
     <section>
       <div class="section-title">
@@ -203,34 +163,6 @@
     <section>
       <h2><i>3</i>한마디</h2>
       <label>하단 문구<input id="lifecutCaption" type="text" maxlength="40" placeholder="RESCENE with me"></label>
-    </section>
-  </div>
-
-  <div id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab" hidden>
-    <section>
-      <h2><i>2</i>영수증 정보</h2>
-      <label>상단 제목<input id="receiptTitle" type="text" maxlength="30" placeholder="SCENE RECEIPT"></label>
-      <label>날짜<input id="receiptDate" type="text" maxlength="20" placeholder="2026.09.23"></label>
-    </section>
-    <section>
-      <h2><i>3</i>품목</h2>
-      <div class="pair">
-        <label>항목 1<input id="receiptItem1" type="text" maxlength="16" placeholder="오늘의 기분"></label>
-        <label>내용<input id="receiptItem1Val" type="text" maxlength="16" placeholder="최고"></label>
-      </div>
-      <div class="pair">
-        <label>항목 2<input id="receiptItem2" type="text" maxlength="16" placeholder="함께한 사람"></label>
-        <label>내용<input id="receiptItem2Val" type="text" maxlength="16" placeholder="RESCENE"></label>
-      </div>
-      <div class="pair">
-        <label>항목 3<input id="receiptItem3" type="text" maxlength="16" placeholder="오늘 날씨"></label>
-        <label>내용<input id="receiptItem3Val" type="text" maxlength="16" placeholder="맑음"></label>
-      </div>
-    </section>
-    <section>
-      <h2><i>4</i>한마디 & 스타일</h2>
-      <label>총평 한마디<input id="receiptCaption" type="text" maxlength="40" placeholder="오늘의 최애 순간"></label>
-      <label class="check"><input id="receiptMono" type="checkbox" checked> 흑백 · 망점 효과</label>
     </section>
   </div>
 
