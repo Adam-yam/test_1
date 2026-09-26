@@ -124,6 +124,9 @@ h2 i{
 
 .lifecut-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lifecut-slots label{margin-bottom:0}
+.slot-picker{display:flex;gap:6px;margin-bottom:16px}
+.slot-pick{width:28px;height:28px;padding:0;border-radius:50%;font-size:12px;color:var(--muted)}
+.slot-pick[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .upload.small{min-height:88px}
 .upload.small .upload-icon svg{width:19px;height:19px}
 .upload.small.filled{border-style:solid;border-color:var(--ink);background:#eef1f4}

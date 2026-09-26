@@ -150,6 +150,18 @@
         <label class="upload small" data-slot="3"><input class="lifecutInput" data-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon"><svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></span><small>4</small></label>
       </div>
       <p class="hint">JPG · PNG · WebP · AVIF / 슬롯당 최대 25 MB</p>
+      <details id="lifecutAdjust">
+        <summary>사진 위치 조정</summary>
+        <div class="slot-picker" role="tablist" aria-label="조정할 사진 선택">
+          <button type="button" class="slot-pick" data-slot="0" aria-selected="true" disabled>1</button>
+          <button type="button" class="slot-pick" data-slot="1" aria-selected="false" disabled>2</button>
+          <button type="button" class="slot-pick" data-slot="2" aria-selected="false" disabled>3</button>
+          <button type="button" class="slot-pick" data-slot="3" aria-selected="false" disabled>4</button>
+        </div>
+        <label>확대 <input id="lifecutZoom" type="range" min="1" max="2.5" step="0.01" value="1"></label>
+        <label>가로 위치 <input id="lifecutPanX" type="range" min="-1" max="1" step="0.01" value="0"></label>
+        <label>세로 위치 <input id="lifecutPanY" type="range" min="-1" max="1" step="0.01" value="0"></label>
+      </details>
     </section>
     <section>
       <h2><i>2</i>프레임</h2>
