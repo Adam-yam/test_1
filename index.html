@@ -7,11 +7,14 @@
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 <meta name="description" content="사진으로 만드는 음악 포스터와 포커스 모션. SCENE Studio">
 <title>SCENE - Studio</title>
-<link rel="icon" type="image/png" sizes="512x512" href="./images/icon.png?v=3">
-<link rel="apple-touch-icon" sizes="512x512" href="./images/icon.png?v=3">
+<link rel="icon" href="./favicon.ico?v=4" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32.png?v=4">
+<link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16.png?v=4">
+<link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png?v=4">
 <link rel="stylesheet" href="./styles.css">
 <script src="./vendor/gif.js" defer></script>
-<script src="./app.js" defer></script>
+<script src="./camera-ui.js?v=4" defer></script>
+<script src="./app.js?v=4" defer></script>
 </head>
 <body>
 <header>
@@ -97,10 +100,10 @@
       <h2><i>2</i>촬영 스타일</h2>
       <label>카메라
         <select id="camera">
-          <option value="clean">iPhone · 클린</option>
-          <option value="grid">Galaxy · 그리드</option>
-          <option value="pro">카메라 · 프로</option>
-          <option value="vhs">캠코더 · VHS</option>
+          <option value="clean">iPhone · iOS 클래식</option>
+          <option value="grid">Galaxy · One UI</option>
+          <option value="pro">미러리스 · 라이브 뷰</option>
+          <option value="vhs">캠코더 · Handycam</option>
           <option value="parallax">패럴랙스 · 줌</option>
           <option value="lightstick">라이트스틱 · 보케</option>
         </select>
