@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 <meta name="description" content="사진으로 만드는 음악 포스터와 포커스 모션. SCENE Studio">
 <title>SCENE — Photo studio</title>
+<link rel="icon" type="image/png" href="./images/icon.png">
+<link rel="apple-touch-icon" href="./images/icon.png">
 <link rel="stylesheet" href="./styles.css">
 <script src="./vendor/gif.js" defer></script>
 <script src="./app.js" defer></script>
@@ -38,7 +41,10 @@
     </div>
     <label class="upload" id="drop">
       <input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif">
-      <span class="upload-icon">＋</span>
+      <span class="upload-icon">
+        <svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>
+      </span>
       <strong id="fileLabel">사진 선택</strong>
       <small>여기에 끌어놓거나 붙여넣기</small>
     </label>
@@ -178,10 +184,10 @@
         <button id="lifecutClear" class="text-button" disabled>모두 지우기</button>
       </div>
       <div class="lifecut-slots">
-        <label class="upload small" data-slot="0"><input class="lifecutInput" data-index="0" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>1</small></label>
-        <label class="upload small" data-slot="1"><input class="lifecutInput" data-index="1" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>2</small></label>
-        <label class="upload small" data-slot="2"><input class="lifecutInput" data-index="2" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>3</small></label>
-        <label class="upload small" data-slot="3"><input class="lifecutInput" data-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon">＋</span><small>4</small></label>
+        <label class="upload small" data-slot="0"><input class="lifecutInput" data-index="0" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon"><svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></span><small>1</small></label>
+        <label class="upload small" data-slot="1"><input class="lifecutInput" data-index="1" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon"><svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></span><small>2</small></label>
+        <label class="upload small" data-slot="2"><input class="lifecutInput" data-index="2" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon"><svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></span><small>3</small></label>
+        <label class="upload small" data-slot="3"><input class="lifecutInput" data-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"><span class="upload-icon"><svg class="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></span><small>4</small></label>
       </div>
       <p class="hint">JPG · PNG · WebP · AVIF / 슬롯당 최대 25 MB</p>
     </section>
@@ -238,7 +244,9 @@
   </div>
   <div class="preview-area" id="previewArea">
     <div id="empty">
-      <span class="empty-mark">＋</span>
+      <span class="empty-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-9 9"/></svg>
+      </span>
       <h2>사진 추가</h2>
       <button id="choose" class="primary">사진 선택</button>
     </div>
